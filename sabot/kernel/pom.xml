@@ -186,12 +186,6 @@
 
     <dependency>
       <groupId>com.dremio.services</groupId>
-      <artifactId>dremio-services-acl</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.dremio.services</groupId>
       <artifactId>dremio-services-embedded-metadata-pointer</artifactId>
     </dependency>
 
