@@ -16,10 +16,13 @@ git log --oneline -3
 
 Vous devriez voir :
 ```
+f490f531c Fix: Resolve cyclic dependency by moving SQL handlers to ACL module
+2718b4e6d Add comprehensive compilation guide for ACL plugin
 a01dbeccb Fix: Add ACL dependency to sabot-kernel pom.xml
 db781378a Implement ACL Plugin MVP (Phase 1)
-8cd338a5f Add comprehensive ACL plugin design document
 ```
+
+**Note importante** : Le commit `f490f531c` résout un problème de dépendance cyclique en déplaçant les SQL handlers dans le module ACL.
 
 ## 🔨 Étape 2 : Compilation
 
@@ -168,6 +171,23 @@ services/acl/target/                    ~2 MB
 ```
 
 ## 🐛 Résolution de Problèmes
+
+### Erreur : Cyclic Dependency / ProjectCycleException
+
+**Symptôme** :
+```
+[ERROR] The projects in the reactor contain a cyclic reference:
+Edge between 'dremio-services-acl' and 'dremio-sabot-kernel'
+```
+
+**Solution** : Ce problème est résolu dans le commit `f490f531c`
+```bash
+# Assurez-vous d'avoir le dernier commit
+git pull origin claude/implement-acl-support-011CV638pBHJwyQ3TqaWtcnh
+git log --oneline -1  # Doit afficher f490f531c ou plus récent
+```
+
+**Explication** : Les SQL handlers ont été déplacés de `sabot-kernel` vers `services/acl` pour éviter la dépendance cyclique. Ils sont chargés dynamiquement par réflexion, donc l'emplacement n'importe pas.
 
 ### Erreur : "package com.dremio.service.acl does not exist"
 
