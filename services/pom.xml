@@ -33,6 +33,7 @@
   <modules>
     <module>accelerator</module>
     <module>accelerator-api</module>
+    <module>acl</module>
     <module>arrow-flight</module>
     <module>arrow-flight-common</module>
     <module>authenticator</module>
