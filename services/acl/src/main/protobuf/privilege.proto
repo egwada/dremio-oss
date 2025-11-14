@@ -53,10 +53,10 @@ enum GranteeType {
 
 // Un grant de privilège
 message PrivilegeGrant {
-  required string grant_id = 1;              // UUID unique
-  required GranteeType grantee_type = 2;     // USER ou ROLE
-  required string grantee_name = 3;          // Nom du user ou role
-  required ResourceType resource_type = 4;   // Type de ressource
+  optional string grant_id = 1;              // UUID unique
+  optional GranteeType grantee_type = 2;     // USER ou ROLE
+  optional string grantee_name = 3;          // Nom du user ou role
+  optional ResourceType resource_type = 4;   // Type de ressource
   repeated string resource_path = 5;         // Path complet (ex: ["source", "folder", "table"])
   repeated PrivilegeType privileges = 6;     // Liste des privilèges
   optional string granted_by = 7;            // Qui a fait le grant
@@ -67,8 +67,8 @@ message PrivilegeGrant {
 
 // Définition d'un rôle (Phase 2, mais on définit le proto maintenant)
 message Role {
-  required string role_id = 1;           // UUID unique
-  required string role_name = 2;         // Nom du rôle (unique)
+  optional string role_id = 1;           // UUID unique
+  optional string role_name = 2;         // Nom du rôle (unique)
   optional string description = 3;       // Description
   optional string owner = 4;             // Propriétaire du rôle
   optional uint64 created_at = 5;        // Timestamp création
@@ -78,10 +78,10 @@ message Role {
 
 // Membership user-role (Phase 2)
 message RoleMembership {
-  required string membership_id = 1;     // UUID unique
-  required string role_name = 2;         // Nom du rôle
-  required string member_name = 3;       // Nom du membre (user ou role)
-  required GranteeType member_type = 4;  // USER ou ROLE
+  optional string membership_id = 1;     // UUID unique
+  optional string role_name = 2;         // Nom du rôle
+  optional string member_name = 3;       // Nom du membre (user ou role)
+  optional GranteeType member_type = 4;  // USER ou ROLE
   optional string granted_by = 5;        // Qui a assigné
   optional uint64 granted_at = 6;        // Timestamp
   optional string tag = 7;               // Pour optimistic locking
