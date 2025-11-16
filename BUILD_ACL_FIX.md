@@ -10,11 +10,11 @@ Les classes Protobuf ne se génèrent pas automatiquement pendant `mvn compile` 
 
 ```bash
 # Étape 1 : Compiler jusqu'au module services (avant ACL)
-mvn clean install -DskipTests -pl '!services/acl,!services/pubsub-nats,!services/reindexer'
+mvn clean install -DskipTests -Ddremio.oss-only=true -pl '!services/acl,!services/pubsub-nats,!services/reindexer'
 
 # Étape 2 : Générer les sources Protobuf pour ACL
 cd services/acl
-mvn generate-sources
+mvn generate-sources -Ddremio.oss-only=true
 
 # Étape 3 : Vérifier que les classes sont générées
 ls -la target/generated-sources/protostuff/com/dremio/service/acl/proto/
@@ -22,12 +22,14 @@ ls -la target/generated-sources/protostuff/com/dremio/service/acl/proto/
 # Devrait afficher : AclProtobuf.java
 
 # Étape 4 : Compiler le module ACL
-mvn compile
+mvn compile -Ddremio.oss-only=true
 
 # Étape 5 : Retourner à la racine et finir la compilation
 cd ../..
-mvn install -DskipTests -rf :dremio-services-acl
+mvn install -DskipTests -Ddremio.oss-only=true -rf :dremio-services-acl
 ```
+
+**IMPORTANT** : Le flag `-Ddremio.oss-only=true` est **obligatoire** pour compiler uniquement la version OSS de Dremio.
 
 ### Option 2 : Build Script Automatique
 
@@ -41,7 +43,7 @@ echo "=== Building Dremio with ACL Plugin ==="
 
 # 1. Build tout sauf ACL
 echo "Step 1: Building core modules..."
-mvn clean install -DskipTests -pl '!services/acl,!services/pubsub-nats,!services/reindexer' || {
+mvn clean install -DskipTests -Ddremio.oss-only=true -pl '!services/acl,!services/pubsub-nats,!services/reindexer' || {
     echo "Core build failed"
     exit 1
 }
@@ -49,7 +51,7 @@ mvn clean install -DskipTests -pl '!services/acl,!services/pubsub-nats,!services
 # 2. Generate ACL protobuf classes
 echo "Step 2: Generating ACL protobuf classes..."
 cd services/acl
-mvn generate-sources || {
+mvn generate-sources -Ddremio.oss-only=true || {
     echo "Protobuf generation failed"
     exit 1
 }
@@ -64,7 +66,7 @@ echo "✓ Protobuf classes generated successfully"
 
 # 3. Compile ACL module
 echo "Step 3: Compiling ACL module..."
-mvn compile || {
+mvn compile -Ddremio.oss-only=true || {
     echo "ACL compilation failed"
     exit 1
 }
@@ -73,7 +75,7 @@ cd ../..
 
 # 4. Resume build from ACL
 echo "Step 4: Completing build..."
-mvn install -DskipTests -rf :dremio-services-acl || {
+mvn install -DskipTests -Ddremio.oss-only=true -rf :dremio-services-acl || {
     echo "Final build failed"
     exit 1
 }
@@ -104,7 +106,7 @@ cat src/main/protobuf/privilege.proto | head -20
 mkdir -p target/generated-sources/protostuff
 
 # Exécuter seulement le plugin protostuff
-mvn com.dremio.build-tools:dremio-protostuff-maven-plugin:compile
+mvn com.dremio.build-tools:dremio-protostuff-maven-plugin:compile -Ddremio.oss-only=true
 
 # Vérifier la génération
 find target/generated-sources -name "*.java"
@@ -123,7 +125,7 @@ ls ~/.m2/repository/com/dremio/build-tools/dremio-protostuff-maven-plugin/
 
 # Activer le debug Maven
 cd services/acl
-mvn generate-sources -X 2>&1 | grep protostuff
+mvn generate-sources -X -Ddremio.oss-only=true 2>&1 | grep protostuff
 ```
 
 ## 📝 Pourquoi ce Problème ?

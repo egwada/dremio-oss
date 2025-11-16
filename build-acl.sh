@@ -30,7 +30,7 @@ NC='\033[0m' # No Color
 
 # 1. Build tout sauf ACL
 echo -e "${YELLOW}Step 1/4:${NC} Building core modules (excluding ACL)..."
-mvn clean install -DskipTests -pl '!services/acl,!services/pubsub-nats,!services/reindexer' || {
+mvn clean install -DskipTests -Ddremio.oss-only=true -pl '!services/acl,!services/pubsub-nats,!services/reindexer' || {
     echo -e "${RED}✗ Core build failed${NC}"
     exit 1
 }
@@ -40,7 +40,7 @@ echo ""
 # 2. Generate ACL protobuf classes
 echo -e "${YELLOW}Step 2/4:${NC} Generating ACL protobuf classes..."
 cd services/acl
-mvn generate-sources || {
+mvn generate-sources -Ddremio.oss-only=true || {
     echo -e "${RED}✗ Protobuf generation failed${NC}"
     exit 1
 }
@@ -58,7 +58,7 @@ echo ""
 
 # 3. Compile ACL module
 echo -e "${YELLOW}Step 3/4:${NC} Compiling ACL module..."
-mvn compile || {
+mvn compile -Ddremio.oss-only=true || {
     echo -e "${RED}✗ ACL compilation failed${NC}"
     exit 1
 }
@@ -69,7 +69,7 @@ cd ../..
 
 # 4. Resume build from ACL
 echo -e "${YELLOW}Step 4/4:${NC} Completing build (remaining modules)..."
-mvn install -DskipTests -rf :dremio-services-acl || {
+mvn install -DskipTests -Ddremio.oss-only=true -rf :dremio-services-acl || {
     echo -e "${RED}✗ Final build failed${NC}"
     exit 1
 }

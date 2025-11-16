@@ -30,23 +30,25 @@ db781378a Implement ACL Plugin MVP (Phase 1)
 
 ```bash
 # Depuis la racine du projet
-mvn clean install -DskipTests
+mvn clean install -DskipTests -Ddremio.oss-only=true
 
 # ⏱️ Durée attendue : 10-20 minutes
 # ✅ Succès attendu : BUILD SUCCESS
 ```
+
+**Note importante** : Le flag `-Ddremio.oss-only=true` est **obligatoire** pour compiler uniquement la version communautaire (OSS) de Dremio.
 
 ### Option B : Compilation du Module ACL Uniquement
 
 ```bash
 # Compiler uniquement le module ACL
 cd services/acl
-mvn clean install -DskipTests
+mvn clean install -DskipTests -Ddremio.oss-only=true
 cd ../..
 
 # Puis compiler sabot-kernel
 cd sabot/kernel
-mvn clean compile -DskipTests
+mvn clean compile -DskipTests -Ddremio.oss-only=true
 cd ../..
 ```
 
@@ -100,7 +102,7 @@ ls -la sabot/kernel/target/classes/com/dremio/exec/planner/sql/handlers/Grant*.c
 find services/acl/target/classes -name "*.class" | head -20
 
 # Vérifier les dépendances
-mvn dependency:tree -pl services/acl | grep -A 5 "dremio-services-acl"
+mvn dependency:tree -pl services/acl -Ddremio.oss-only=true | grep -A 5 "dremio-services-acl"
 ```
 
 ## ⚠️ État Actuel : Plugin NON Intégré
@@ -206,7 +208,7 @@ git pull origin claude/implement-acl-support-011CV638pBHJwyQ3TqaWtcnh
 ```bash
 # Forcer la génération
 cd services/acl
-mvn clean generate-sources
+mvn clean generate-sources -Ddremio.oss-only=true
 ls -la target/generated-sources/protostuff/
 ```
 
@@ -215,7 +217,7 @@ ls -la target/generated-sources/protostuff/
 **Solution** : Augmenter la mémoire Maven
 ```bash
 export MAVEN_OPTS="-Xmx4g -XX:MaxPermSize=512m"
-mvn clean install -DskipTests
+mvn clean install -DskipTests -Ddremio.oss-only=true
 ```
 
 ## 📝 Tests Unitaires (Prochaine Étape)
