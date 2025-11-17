@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dremio.service.acl.proto;
+syntax = "proto2";
+package acl;
 
 option java_package = "com.dremio.service.acl.proto";
 option optimize_for = SPEED;
