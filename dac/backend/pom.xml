@@ -471,11 +471,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.dremio.community.plugins</groupId>
-      <artifactId>dremio-ce-jdbc-plugin</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>io.findify</groupId>
       <artifactId>s3mock_2.12</artifactId>
       <scope>test</scope>
@@ -812,6 +807,22 @@
           </plugins>
         </pluginManagement>
       </build>
+    </profile>
+    <profile>
+      <id>community-build</id>
+      <activation>
+        <property>
+          <name>dremio.oss-only</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.dremio.community.plugins</groupId>
+          <artifactId>dremio-ce-jdbc-plugin</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 </project>
