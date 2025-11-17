@@ -18,7 +18,6 @@ package com.dremio.dac.api;
 import static com.dremio.dac.options.UIOptions.ALLOW_HIVE_SOURCE;
 import static com.dremio.exec.store.DataplanePluginOptions.NESSIE_PLUGIN_ENABLED;
 import static com.dremio.exec.store.IcebergCatalogPluginOptions.RESTCATALOG_PLUGIN_ENABLED;
-import static com.dremio.exec.store.jdbc.JdbcPluginOptions.JDBC_OPENSEARCH_ENABLED;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import com.dremio.common.exceptions.ExecutionSetupException;
@@ -222,7 +221,8 @@ public class DeprecatedSourceResource {
       case "HIVE":
         return optionManager.getOption(ALLOW_HIVE_SOURCE);
       case "OPENSEARCH":
-        return optionManager.getOption(JDBC_OPENSEARCH_ENABLED);
+        // OPENSEARCH requires the non-OSS JDBC plugin, so it's not available in OSS builds
+        return false;
       case "NESSIE":
         return optionManager.getOption(NESSIE_PLUGIN_ENABLED);
       case "RESTCATALOG":
