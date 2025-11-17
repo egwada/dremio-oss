@@ -108,9 +108,24 @@ mvn clean install -DskipTests -Ddremio.oss-only=true
 - ✅ Les builds Community (sans le flag) continuent de fonctionner avec les plugins non-OSS
 - ✅ Aucun impact sur les autres modules ou fonctionnalités
 
+## Corrections Multiples
+
+### 1. Dépendance dremio-ce-jdbc-plugin (Commit: `18cdb52ae`)
+
+Problème : Dépendance inconditionnelle dans `dac/backend/pom.xml`
+Solution : Déplacée vers profile `community-build`
+
+### 2. Import JDBC dans DeprecatedSourceResource (Commit: `38bdeec0a`)
+
+Problème : `DeprecatedSourceResource.java` importait `com.dremio.exec.store.jdbc.JdbcPluginOptions`
+Solution :
+- Suppression de l'import
+- Retour de `false` pour OPENSEARCH en mode OSS (plugin non disponible)
+
 ## Modules Affectés
 
-- `dac/backend` : dépendance déplacée vers profile
+- `dac/backend/pom.xml` : dépendance déplacée vers profile
+- `dac/backend/src/main/java/com/dremio/dac/api/DeprecatedSourceResource.java` : import JDBC supprimé
 - `dac/daemon` : déjà correct (aucun changement)
 
 ## Références
