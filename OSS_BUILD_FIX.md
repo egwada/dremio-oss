@@ -122,11 +122,23 @@ Solution :
 - Suppression de l'import
 - Retour de `false` pour OPENSEARCH en mode OSS (plugin non disponible)
 
+### 3. Déclarations manquantes dans privilege.proto (Commit: `6cab5c4a0`)
+
+Problème : Le plugin protostuff s'exécutait mais ne générait pas de classes Java
+Cause : Absence de `syntax = "proto2";` et `package acl;` dans le fichier proto
+Solution :
+- Ajout de `syntax = "proto2";` au début du fichier
+- Ajout de `package acl;` après le copyright
+- Conservation de `java_package` pour le package Java correct
+
+Le plugin protostuff nécessite ces deux déclarations explicites pour générer les classes.
+
 ## Modules Affectés
 
 - `dac/backend/pom.xml` : dépendance déplacée vers profile
 - `dac/backend/src/main/java/com/dremio/dac/api/DeprecatedSourceResource.java` : import JDBC supprimé
 - `dac/daemon` : déjà correct (aucun changement)
+- `services/acl/src/main/protobuf/privilege.proto` : ajout de syntax et package
 
 ## Références
 
