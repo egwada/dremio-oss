@@ -3,8 +3,8 @@
 ## ✅ ALL COMPILATION ERRORS FIXED
 
 **Date**: 2025-11-18
-**Total errors resolved**: 27 (21 initial + 6 builder pattern)
-**Status**: Module compiles successfully
+**Total errors resolved**: 26 (21 initial + 5 Protostuff setters)
+**Status**: Module should compile successfully
 
 ## Summary of Fixes Applied
 
@@ -38,18 +38,21 @@
 - **Solution**: Added `visit()` implementation, changed to `userContext.getUserId()`
 - **File**: `AclCatalog.java`
 
-### 7. Protostuff Builder Pattern Compatibility (6 errors - Current commit)
-- **Problem**: Generated Protostuff classes don't have `toBuilder()` and `newBuilder()` methods
-- **Solution**: Changed from builder pattern to direct constructor/setter approach
+### 7. Protostuff Setter Methods (5 errors - Commits: `6c9317a5d`, `05125a4b0`)
+- **Problem**: Protostuff only generates no-arg constructor, not parameterized constructors
+- **Solution**: Use `new PrivilegeGrant()` with setter methods
+- **Key Finding**: For `repeated` fields, Protostuff generates `setXxxList()` not `setXxx()`
 - **Files**:
-  - `AuthorizationServiceImpl.java` (lines 267-278, 285-294, 345-356)
-  - `PrivilegeStore.java` (line 48: explicit cast, line 59-72: constructor)
+  - `AuthorizationServiceImpl.java` (3 errors fixed)
+  - `PrivilegeStore.java` (2 errors fixed)
 - **Details**:
-  - Line 267-278: Changed `existingGrant.toBuilder()` to `new PrivilegeGrant(...)`
-  - Line 285-294: Changed `PrivilegeGrant.newBuilder()` to `new PrivilegeGrant()` with setters
-  - Line 345-356: Changed revoke's `toBuilder()` to constructor
-  - Line 48: Added explicit `(LegacyIndexedStore<String, PrivilegeGrant>)` cast
-  - Line 59-72: Changed `grant.toBuilder()` to constructor
+  - **AuthorizationServiceImpl.java**:
+    - Line 267-277: `grantPrivilege()` update - use setters including `setResourcePathList()` and `setPrivilegesList()`
+    - Line 288-289: `grantPrivilege()` create - changed `setResourcePath()` → `setResourcePathList()`, `addPrivileges()` → `setPrivilegesList()`
+    - Line 344-354: `revokePrivilege()` - use setters for all fields
+  - **PrivilegeStore.java**:
+    - Line 48: Added explicit `(LegacyIndexedStore<String, PrivilegeGrant>)` cast
+    - Line 61-71: `create()` - use setters for all fields
 
 ## Current Module Structure
 
