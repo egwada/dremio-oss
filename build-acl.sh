@@ -45,15 +45,16 @@ mvn generate-sources -Ddremio.oss-only=true || {
     exit 1
 }
 
-# Verify generation
-if [ ! -f "target/generated-sources/protostuff/com/dremio/service/acl/proto/AclProtobuf.java" ]; then
+# Verify generation (Protostuff generates individual class files, not a wrapper class)
+if [ ! -f "target/generated-sources/protostuff/com/dremio/service/acl/proto/PrivilegeGrant.java" ]; then
     echo -e "${RED}✗ ERROR: Protobuf classes not generated!${NC}"
-    echo "Expected file: target/generated-sources/protostuff/com/dremio/service/acl/proto/AclProtobuf.java"
+    echo "Expected file: target/generated-sources/protostuff/com/dremio/service/acl/proto/PrivilegeGrant.java"
     exit 1
 fi
 
 echo -e "${GREEN}✓ Protobuf classes generated successfully${NC}"
-ls -lh target/generated-sources/protostuff/com/dremio/service/acl/proto/AclProtobuf.java
+echo "Generated files:"
+ls -lh target/generated-sources/protostuff/com/dremio/service/acl/proto/*.java
 echo ""
 
 # 3. Compile ACL module
@@ -81,11 +82,14 @@ echo "============================================"
 echo ""
 echo "ACL plugin has been compiled successfully."
 echo ""
-echo "Generated files:"
-echo "  - services/acl/target/generated-sources/protostuff/com/dremio/service/acl/proto/AclProtobuf.java"
+echo "Generated protobuf classes:"
+echo "  - PrivilegeGrant.java, PrivilegeType.java, ResourceType.java"
+echo "  - GranteeType.java, Role.java, RoleMembership.java"
+echo ""
+echo "Generated artifacts:"
 echo "  - services/acl/target/dremio-services-acl-*.jar"
 echo ""
 echo "Next steps:"
-echo "  1. Verify: jar tf services/acl/target/dremio-services-acl-*.jar | grep AclProtobuf"
+echo "  1. Verify: jar tf services/acl/target/dremio-services-acl-*.jar | grep PrivilegeGrant"
 echo "  2. Integration: Modify DACDaemonModule to activate the plugin"
 echo ""

@@ -189,9 +189,67 @@ message SimpleMessage {
 - ✅ `sabot/kernel/` - utilise `src/main/protobuf` - **FONCTIONNE**
 - ❌ `services/acl/` - utilise `src/main/protobuf` - **NE FONCTIONNE PAS**
 
+## 🎉 RÉSOLUTION
+
+### Le Problème Réel
+
+**Les classes proto SONT générées correctement !** Le problème était dans `build-acl.sh` qui cherchait le mauvais fichier.
+
+### Ce Qui Est Généré
+
+Protostuff génère des **fichiers de classes individuels** (contrairement à Google Protobuf qui génère un fichier wrapper) :
+
+```bash
+$ ls target/generated-sources/protostuff/com/dremio/service/acl/proto/
+GranteeType.java
+PrivilegeGrant.java
+PrivilegeType.java
+ResourceType.java
+Role.java
+RoleMembership.java
+```
+
+**6 fichiers Java** - un pour chaque message et enum défini dans `privilege.proto`.
+
+### La Confusion
+
+`build-acl.sh` cherchait `AclProtobuf.java` (style Google Protobuf) :
+
+```bash
+# INCORRECT - ce fichier n'existe jamais avec Protostuff
+if [ ! -f "...proto/AclProtobuf.java" ]; then
+    echo "ERROR: Protobuf classes not generated!"
+    exit 1
+fi
+```
+
+Mais ce fichier n'existe pas car :
+- **Google Protobuf** génère : `AclProtobuf.java` contenant des inner classes
+- **Protostuff** génère : `PrivilegeGrant.java`, `Role.java`, etc. (fichiers séparés)
+
+### Corrections Appliquées
+
+1. ✅ Ajout de `syntax = "proto2";` (Commit: `6cab5c4a0`)
+2. ✅ Ajout de `package acl;` (Commit: `6cab5c4a0`)
+3. ✅ Ajout de `encoding: UTF-8` (Commit: `e459c226e`)
+4. ✅ Ajout de `primitive_numbers_if_optional: true` (Commit: `e459c226e`)
+5. ✅ **Fix validation dans build-acl.sh** - Cherche `PrivilegeGrant.java` au lieu de `AclProtobuf.java`
+
+### Vérification
+
+```bash
+cd services/acl
+mvn clean generate-sources -Ddremio.oss-only=true
+ls -lh target/generated-sources/protostuff/com/dremio/service/acl/proto/*.java
+```
+
+Devrait afficher les 6 fichiers générés.
+
 ## Prochaines Étapes Recommandées
 
-1. Exécuter avec `-X` (debug) et analyser les logs
-2. Comparer exactement avec la configuration de `protocol/pom.xml`
-3. Essayer de déplacer vers `src/main/proto`
-4. Si rien ne fonctionne : considérer l'utilisation de `protobuf-maven-plugin` (xolstice) à la place
+1. ✅ ~~Exécuter avec `-X` (debug) et analyser les logs~~ - Résolu
+2. ✅ ~~Comparer exactement avec la configuration de `protocol/pom.xml`~~ - Résolu
+3. ❌ ~~Essayer de déplacer vers `src/main/proto`~~ - Pas nécessaire
+4. ❌ ~~Si rien ne fonctionne : considérer l'utilisation de `protobuf-maven-plugin` (xolstice) à la place~~ - Pas nécessaire
+
+**La génération protobuf fonctionne parfaitement !**
