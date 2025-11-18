@@ -133,7 +133,29 @@ Solution :
 
 Le plugin protostuff nécessite ces deux déclarations explicites pour générer les classes.
 
-### 4. Validation incorrecte dans build-acl.sh (Commit: `d389af06b`)
+### 4. Imports protobuf incorrects dans Java (Commit: `b2fb65650`)
+
+Problème : 47 erreurs de compilation "package com.dremio.service.acl.proto.AclProtobuf does not exist"
+Cause : **Imports Java utilisaient le pattern Google Protobuf au lieu de Protostuff**
+Solution :
+- Remplacé tous les imports `com.dremio.service.acl.proto.AclProtobuf.*` par `com.dremio.service.acl.proto.*`
+- Corrigé `DocumentConverter` import dans PrivilegeGrantConverter.java
+- Ajouté `ResourceType` import et corrigé son usage dans AuthorizationServiceImpl.java
+
+**Différence clé** :
+- **Google Protobuf** génère : `AclProtobuf.java` avec inner classes → `import proto.AclProtobuf.GranteeType;`
+- **Protostuff** génère : `GranteeType.java`, `PrivilegeGrant.java`, etc. (fichiers séparés) → `import proto.GranteeType;`
+
+Fichiers corrigés (8 au total) :
+- `AuthorizationService.java`
+- `GrantHandler.java`, `RevokeHandler.java`
+- `AuthorizationServiceImpl.java`
+- `PermissionEvaluator.java`
+- `PrivilegeStore.java`, `PrivilegeGrantConverter.java`, `PrivilegeStoreCreator.java`
+
+Voir détails dans `services/acl/PROTOBUF_IMPORT_FIX.md`
+
+### 5. Validation incorrecte dans build-acl.sh (Commit: `d389af06b`)
 
 Problème : Le script de build échouait en cherchant un fichier qui n'existe pas
 Cause : **Confusion entre Google Protobuf et Protostuff** - le script cherchait `AclProtobuf.java`
@@ -160,6 +182,7 @@ Fichiers générés (6 au total) :
 - `dac/backend/src/main/java/com/dremio/dac/api/DeprecatedSourceResource.java` : import JDBC supprimé
 - `dac/daemon` : déjà correct (aucun changement)
 - `services/acl/src/main/protobuf/privilege.proto` : ajout de syntax et package
+- `services/acl/src/main/java/**/*.java` : correction des imports protobuf (8 fichiers)
 - `build-acl.sh` : correction de la validation protobuf
 
 ## Références
