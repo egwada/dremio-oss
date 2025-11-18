@@ -3,7 +3,7 @@
 ## ✅ ALL COMPILATION ERRORS FIXED
 
 **Date**: 2025-11-18
-**Total errors resolved**: 21
+**Total errors resolved**: 27 (21 initial + 6 builder pattern)
 **Status**: Module compiles successfully
 
 ## Summary of Fixes Applied
@@ -37,6 +37,19 @@
 - **Problem**: Missing `visit()` method, wrong UserContext API
 - **Solution**: Added `visit()` implementation, changed to `userContext.getUserId()`
 - **File**: `AclCatalog.java`
+
+### 7. Protostuff Builder Pattern Compatibility (6 errors - Current commit)
+- **Problem**: Generated Protostuff classes don't have `toBuilder()` and `newBuilder()` methods
+- **Solution**: Changed from builder pattern to direct constructor/setter approach
+- **Files**:
+  - `AuthorizationServiceImpl.java` (lines 267-278, 285-294, 345-356)
+  - `PrivilegeStore.java` (line 48: explicit cast, line 59-72: constructor)
+- **Details**:
+  - Line 267-278: Changed `existingGrant.toBuilder()` to `new PrivilegeGrant(...)`
+  - Line 285-294: Changed `PrivilegeGrant.newBuilder()` to `new PrivilegeGrant()` with setters
+  - Line 345-356: Changed revoke's `toBuilder()` to constructor
+  - Line 48: Added explicit `(LegacyIndexedStore<String, PrivilegeGrant>)` cast
+  - Line 59-72: Changed `grant.toBuilder()` to constructor
 
 ## Current Module Structure
 
