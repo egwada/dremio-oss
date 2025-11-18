@@ -263,27 +263,35 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       if (!existingPrivileges.contains(newPrivilege)) {
         existingPrivileges.add(newPrivilege);
 
-        PrivilegeGrant updatedGrant = existingGrant.toBuilder()
-            .clearPrivileges()
-            .addAllPrivileges(existingPrivileges)
-            .setWithGrantOption(withGrantOption)
-            .build();
+        // Create new PrivilegeGrant with updated privileges
+        PrivilegeGrant updatedGrant = new PrivilegeGrant(
+            existingGrant.getGrantId(),
+            existingGrant.getGranteeType(),
+            existingGrant.getGranteeName(),
+            existingGrant.getResourceType(),
+            existingGrant.getResourcePathList(),
+            existingPrivileges,
+            existingGrant.getGrantedBy(),
+            existingGrant.getGrantedAt(),
+            withGrantOption,
+            existingGrant.getTag()
+        );
 
         privilegeStore.delete(existingGrant.getGrantId());
         privilegeStore.create(updatedGrant);
       }
     } else {
       // Create new grant
-      PrivilegeGrant.Builder grantBuilder = PrivilegeGrant.newBuilder()
-          .setGranteeType(granteeType)
-          .setGranteeName(granteeName)
-          .setResourceType(ResourceType.DATASET) // Phase 1: assume DATASET
-          .addAllResourcePath(resourcePath.getPathComponents())
-          .addPrivileges(convertToPrivilegeType(privilege))
-          .setGrantedBy(grantedBy)
-          .setWithGrantOption(withGrantOption);
+      PrivilegeGrant newGrant = new PrivilegeGrant();
+      newGrant.setGranteeType(granteeType);
+      newGrant.setGranteeName(granteeName);
+      newGrant.setResourceType(ResourceType.DATASET); // Phase 1: assume DATASET
+      newGrant.setResourcePath(resourcePath.getPathComponents());
+      newGrant.addPrivileges(convertToPrivilegeType(privilege));
+      newGrant.setGrantedBy(grantedBy);
+      newGrant.setWithGrantOption(withGrantOption);
 
-      privilegeStore.create(grantBuilder.build());
+      privilegeStore.create(newGrant);
     }
 
     // Clear cache for this user
@@ -334,10 +342,18 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       privilegeStore.delete(existingGrant.getGrantId());
     } else {
       // Update grant with remaining privileges
-      PrivilegeGrant updatedGrant = existingGrant.toBuilder()
-          .clearPrivileges()
-          .addAllPrivileges(remainingPrivileges)
-          .build();
+      PrivilegeGrant updatedGrant = new PrivilegeGrant(
+          existingGrant.getGrantId(),
+          existingGrant.getGranteeType(),
+          existingGrant.getGranteeName(),
+          existingGrant.getResourceType(),
+          existingGrant.getResourcePathList(),
+          remainingPrivileges,
+          existingGrant.getGrantedBy(),
+          existingGrant.getGrantedAt(),
+          existingGrant.getWithGrantOption(),
+          existingGrant.getTag()
+      );
 
       privilegeStore.delete(existingGrant.getGrantId());
       privilegeStore.create(updatedGrant);

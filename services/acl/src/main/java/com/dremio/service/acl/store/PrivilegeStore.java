@@ -45,7 +45,7 @@ public class PrivilegeStore {
 
   public PrivilegeStore(LegacyKVStoreProvider kvStoreProvider) {
     Preconditions.checkNotNull(kvStoreProvider, "kvStoreProvider is required");
-    this.store = kvStoreProvider.getStore(PrivilegeStoreCreator.class);
+    this.store = (LegacyIndexedStore<String, PrivilegeGrant>) kvStoreProvider.getStore(PrivilegeStoreCreator.class);
   }
 
   /**
@@ -56,10 +56,21 @@ public class PrivilegeStore {
    */
   public String create(PrivilegeGrant grant) {
     String grantId = UUID.randomUUID().toString();
-    PrivilegeGrant grantWithId = grant.toBuilder()
-        .setGrantId(grantId)
-        .setGrantedAt(System.currentTimeMillis())
-        .build();
+
+    // Create a new PrivilegeGrant with the generated ID and timestamp
+    PrivilegeGrant grantWithId = new PrivilegeGrant(
+        grantId,
+        grant.getGranteeType(),
+        grant.getGranteeName(),
+        grant.getResourceType(),
+        grant.getResourcePathList(),
+        grant.getPrivilegesList(),
+        grant.getGrantedBy(),
+        System.currentTimeMillis(),
+        grant.getWithGrantOption(),
+        grant.getTag()
+    );
+
     store.put(grantId, grantWithId);
     return grantId;
   }
