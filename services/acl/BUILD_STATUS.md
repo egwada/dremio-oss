@@ -109,14 +109,51 @@ services/acl/
 - Require SQL parser extensions
 - Can be re-enabled after parser work
 
+## Testing
+
+### ✅ Unit Tests Created (Commit: `a6cd10608`)
+
+**4 Test Classes** with **27 Test Cases**:
+
+1. **AuthorizationServiceImplTest** (7 tests)
+   - Grant/revoke privilege operations
+   - Permission checking with various scenarios
+   - ALL privilege wildcard handling
+
+2. **PermissionEvaluatorTest** (7 tests)
+   - Exact match verification
+   - Hierarchical permission inheritance
+   - Edge case handling
+
+3. **PrivilegeStoreTest** (8 tests)
+   - CRUD operations
+   - Search by grantee/resource
+   - Query operations
+
+4. **PrivilegeGrantConverterTest** (5 tests)
+   - Document conversion for indexing
+   - Index field generation
+   - Multiple privilege handling
+
+**Test Coverage**: ~680 lines of test code
+**Framework**: JUnit 4 + Mockito
+**Documentation**: `TESTING.md`
+
+### Running Tests
+```bash
+cd services/acl
+./run-tests.sh
+```
+
 ## Next Steps
 
 1. ✅ ~~Fix compilation errors~~ - **DONE**
-2. **Run full build with `./build-acl.sh`**
-3. **Integrate into DACDaemonModule**
-4. **Add unit tests**
-5. **Add integration tests**
-6. **Phase 2: Enable SQL syntax**
+2. ✅ ~~Add unit tests~~ - **DONE (27 tests)**
+3. **Run and verify all tests pass**
+4. **Run full build with `./build-acl.sh`**
+5. **Integrate into DACDaemonModule**
+6. **Add integration tests**
+7. **Phase 2: Enable SQL syntax**
 
 ## Build Commands
 
