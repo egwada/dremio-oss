@@ -19,8 +19,8 @@ import com.dremio.common.AutoCloseables;
 import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
 import com.dremio.service.Service;
 import com.dremio.service.acl.exception.AclException;
-import com.dremio.service.acl.proto.AclProtobuf.GranteeType;
-import com.dremio.service.acl.proto.AclProtobuf.PrivilegeGrant;
+import com.dremio.service.acl.proto.GranteeType;
+import com.dremio.service.acl.proto.PrivilegeGrant;
 import com.dremio.service.namespace.NamespaceKey;
 
 /**

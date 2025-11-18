@@ -16,9 +16,9 @@
 package com.dremio.service.acl.impl;
 
 import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
-import com.dremio.service.acl.proto.AclProtobuf.GranteeType;
-import com.dremio.service.acl.proto.AclProtobuf.PrivilegeGrant;
-import com.dremio.service.acl.proto.AclProtobuf.PrivilegeType;
+import com.dremio.service.acl.proto.GranteeType;
+import com.dremio.service.acl.proto.PrivilegeGrant;
+import com.dremio.service.acl.proto.PrivilegeType;
 import com.dremio.service.acl.store.PrivilegeStore;
 import com.dremio.service.namespace.NamespaceKey;
 import com.google.common.base.Preconditions;

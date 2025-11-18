@@ -15,10 +15,11 @@
  */
 package com.dremio.service.acl.store;
 
-import com.dremio.datastore.IndexedStore.DocumentConverter;
+import com.dremio.datastore.api.DocumentConverter;
+import com.dremio.datastore.api.DocumentWriter;
 import com.dremio.datastore.indexed.IndexKey;
-import com.dremio.service.acl.proto.AclProtobuf.GranteeType;
-import com.dremio.service.acl.proto.AclProtobuf.PrivilegeGrant;
+import com.dremio.service.acl.proto.GranteeType;
+import com.dremio.service.acl.proto.PrivilegeGrant;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 

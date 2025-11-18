@@ -24,7 +24,7 @@ import com.dremio.exec.planner.sql.parser.SqlGrant;
 import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
 import com.dremio.service.acl.AuthorizationService;
 import com.dremio.service.acl.exception.AclException;
-import com.dremio.service.acl.proto.AclProtobuf.GranteeType;
+import com.dremio.service.acl.proto.GranteeType;
 import com.dremio.service.namespace.NamespaceKey;
 import java.util.Arrays;
 import java.util.Collections;

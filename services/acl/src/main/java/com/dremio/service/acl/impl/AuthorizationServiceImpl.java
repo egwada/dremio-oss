@@ -21,9 +21,10 @@ import com.dremio.datastore.api.LegacyKVStoreProvider;
 import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
 import com.dremio.service.acl.AuthorizationService;
 import com.dremio.service.acl.exception.AclException;
-import com.dremio.service.acl.proto.AclProtobuf.GranteeType;
-import com.dremio.service.acl.proto.AclProtobuf.PrivilegeGrant;
-import com.dremio.service.acl.proto.AclProtobuf.PrivilegeType;
+import com.dremio.service.acl.proto.GranteeType;
+import com.dremio.service.acl.proto.PrivilegeGrant;
+import com.dremio.service.acl.proto.PrivilegeType;
+import com.dremio.service.acl.proto.ResourceType;
 import com.dremio.service.acl.store.PrivilegeStore;
 import com.dremio.service.namespace.NamespaceKey;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -276,7 +277,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       PrivilegeGrant.Builder grantBuilder = PrivilegeGrant.newBuilder()
           .setGranteeType(granteeType)
           .setGranteeName(granteeName)
-          .setResourceType(com.dremio.service.acl.proto.AclProtobuf.ResourceType.DATASET) // Phase 1: assume DATASET
+          .setResourceType(ResourceType.DATASET) // Phase 1: assume DATASET
           .addAllResourcePath(resourcePath.getPathComponents())
           .addPrivileges(convertToPrivilegeType(privilege))
           .setGrantedBy(grantedBy)

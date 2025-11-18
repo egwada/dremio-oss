@@ -20,7 +20,7 @@ import com.dremio.datastore.api.LegacyIndexedStore.LegacyFindByCondition;
 import com.dremio.datastore.api.LegacyKVStoreCreationFunction;
 import com.dremio.datastore.api.LegacyStoreBuildingFactory;
 import com.dremio.datastore.format.Format;
-import com.dremio.service.acl.proto.AclProtobuf.PrivilegeGrant;
+import com.dremio.service.acl.proto.PrivilegeGrant;
 
 /**
  * PrivilegeStore creator.
