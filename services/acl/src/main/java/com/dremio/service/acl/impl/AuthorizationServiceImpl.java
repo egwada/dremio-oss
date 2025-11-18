@@ -264,18 +264,17 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         existingPrivileges.add(newPrivilege);
 
         // Create new PrivilegeGrant with updated privileges
-        PrivilegeGrant updatedGrant = new PrivilegeGrant(
-            existingGrant.getGrantId(),
-            existingGrant.getGranteeType(),
-            existingGrant.getGranteeName(),
-            existingGrant.getResourceType(),
-            existingGrant.getResourcePathList(),
-            existingPrivileges,
-            existingGrant.getGrantedBy(),
-            existingGrant.getGrantedAt(),
-            withGrantOption,
-            existingGrant.getTag()
-        );
+        PrivilegeGrant updatedGrant = new PrivilegeGrant();
+        updatedGrant.setGrantId(existingGrant.getGrantId());
+        updatedGrant.setGranteeType(existingGrant.getGranteeType());
+        updatedGrant.setGranteeName(existingGrant.getGranteeName());
+        updatedGrant.setResourceType(existingGrant.getResourceType());
+        updatedGrant.setResourcePathList(existingGrant.getResourcePathList());
+        updatedGrant.setPrivilegesList(existingPrivileges);
+        updatedGrant.setGrantedBy(existingGrant.getGrantedBy());
+        updatedGrant.setGrantedAt(existingGrant.getGrantedAt());
+        updatedGrant.setWithGrantOption(withGrantOption);
+        updatedGrant.setTag(existingGrant.getTag());
 
         privilegeStore.delete(existingGrant.getGrantId());
         privilegeStore.create(updatedGrant);
@@ -286,8 +285,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       newGrant.setGranteeType(granteeType);
       newGrant.setGranteeName(granteeName);
       newGrant.setResourceType(ResourceType.DATASET); // Phase 1: assume DATASET
-      newGrant.setResourcePath(resourcePath.getPathComponents());
-      newGrant.addPrivileges(convertToPrivilegeType(privilege));
+      newGrant.setResourcePathList(resourcePath.getPathComponents());
+      newGrant.setPrivilegesList(Lists.newArrayList(convertToPrivilegeType(privilege)));
       newGrant.setGrantedBy(grantedBy);
       newGrant.setWithGrantOption(withGrantOption);
 
@@ -342,18 +341,17 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       privilegeStore.delete(existingGrant.getGrantId());
     } else {
       // Update grant with remaining privileges
-      PrivilegeGrant updatedGrant = new PrivilegeGrant(
-          existingGrant.getGrantId(),
-          existingGrant.getGranteeType(),
-          existingGrant.getGranteeName(),
-          existingGrant.getResourceType(),
-          existingGrant.getResourcePathList(),
-          remainingPrivileges,
-          existingGrant.getGrantedBy(),
-          existingGrant.getGrantedAt(),
-          existingGrant.getWithGrantOption(),
-          existingGrant.getTag()
-      );
+      PrivilegeGrant updatedGrant = new PrivilegeGrant();
+      updatedGrant.setGrantId(existingGrant.getGrantId());
+      updatedGrant.setGranteeType(existingGrant.getGranteeType());
+      updatedGrant.setGranteeName(existingGrant.getGranteeName());
+      updatedGrant.setResourceType(existingGrant.getResourceType());
+      updatedGrant.setResourcePathList(existingGrant.getResourcePathList());
+      updatedGrant.setPrivilegesList(remainingPrivileges);
+      updatedGrant.setGrantedBy(existingGrant.getGrantedBy());
+      updatedGrant.setGrantedAt(existingGrant.getGrantedAt());
+      updatedGrant.setWithGrantOption(existingGrant.getWithGrantOption());
+      updatedGrant.setTag(existingGrant.getTag());
 
       privilegeStore.delete(existingGrant.getGrantId());
       privilegeStore.create(updatedGrant);
