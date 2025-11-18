@@ -58,18 +58,17 @@ public class PrivilegeStore {
     String grantId = UUID.randomUUID().toString();
 
     // Create a new PrivilegeGrant with the generated ID and timestamp
-    PrivilegeGrant grantWithId = new PrivilegeGrant(
-        grantId,
-        grant.getGranteeType(),
-        grant.getGranteeName(),
-        grant.getResourceType(),
-        grant.getResourcePathList(),
-        grant.getPrivilegesList(),
-        grant.getGrantedBy(),
-        System.currentTimeMillis(),
-        grant.getWithGrantOption(),
-        grant.getTag()
-    );
+    PrivilegeGrant grantWithId = new PrivilegeGrant();
+    grantWithId.setGrantId(grantId);
+    grantWithId.setGranteeType(grant.getGranteeType());
+    grantWithId.setGranteeName(grant.getGranteeName());
+    grantWithId.setResourceType(grant.getResourceType());
+    grantWithId.setResourcePathList(grant.getResourcePathList());
+    grantWithId.setPrivilegesList(grant.getPrivilegesList());
+    grantWithId.setGrantedBy(grant.getGrantedBy());
+    grantWithId.setGrantedAt(System.currentTimeMillis());
+    grantWithId.setWithGrantOption(grant.getWithGrantOption());
+    grantWithId.setTag(grant.getTag());
 
     store.put(grantId, grantWithId);
     return grantId;
