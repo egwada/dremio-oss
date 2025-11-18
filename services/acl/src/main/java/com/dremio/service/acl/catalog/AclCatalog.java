@@ -21,7 +21,6 @@ import com.dremio.context.UserContext;
 import com.dremio.exec.catalog.Catalog;
 import com.dremio.exec.catalog.DelegatingCatalog;
 import com.dremio.exec.catalog.DremioTable;
-import com.dremio.exec.planner.sql.parser.SqlGrant;
 import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
 import com.dremio.service.acl.AuthorizationService;
 import com.dremio.service.namespace.NamespaceKey;
@@ -82,7 +81,7 @@ public class AclCatalog extends DelegatingCatalog {
   }
 
   @Override
-  public void validatePrivilege(NamespaceKey key, SqlGrant.Privilege privilege) {
+  public void validatePrivilege(NamespaceKey key, Privilege privilege) {
     // This is the main hook! Previously a no-op in CatalogImpl, now we implement it
     if (aclService.isEnabled()) {
       String username = getCurrentUsername();
@@ -109,16 +108,27 @@ public class AclCatalog extends DelegatingCatalog {
   }
 
   /**
+   * Implements the visit method required by Catalog interface.
+   *
+   * @param catalogRewrite Function to transform the catalog
+   * @return The transformed catalog
+   */
+  @Override
+  public Catalog visit(java.util.function.Function<Catalog, Catalog> catalogRewrite) {
+    return catalogRewrite.apply(this);
+  }
+
+  /**
    * Get current username from RequestContext.
    *
-   * @return username, or "UNKNOWN" if not available
+   * @return username (userId), or "UNKNOWN" if not available
    */
   private String getCurrentUsername() {
     try {
-      // Get username from Dremio RequestContext
+      // Get userId from Dremio RequestContext
       UserContext userContext = RequestContext.current().get(UserContext.CTX_KEY);
-      if (userContext != null && userContext.getSerializedUser() != null) {
-        return userContext.getSerializedUser().getUserName();
+      if (userContext != null && userContext.getUserId() != null) {
+        return userContext.getUserId();
       }
     } catch (Exception e) {
       logger.warn("Failed to get current username from context", e);

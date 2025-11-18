@@ -15,6 +15,7 @@
  */
 package com.dremio.service.acl.store;
 
+import com.dremio.datastore.SearchQueryUtils;
 import com.dremio.datastore.SearchTypes.SearchQuery;
 import com.dremio.datastore.api.Document;
 import com.dremio.datastore.api.LegacyIndexedStore;
@@ -55,7 +56,7 @@ public class PrivilegeStore {
    */
   public String create(PrivilegeGrant grant) {
     String grantId = UUID.randomUUID().toString();
-    PrivilegeGrant grantWithId = PrivilegeGrant.newBuilder(grant)
+    PrivilegeGrant grantWithId = grant.toBuilder()
         .setGrantId(grantId)
         .setGrantedAt(System.currentTimeMillis())
         .build();
@@ -90,18 +91,14 @@ public class PrivilegeStore {
    * @return Iterable of privilege grants
    */
   public Iterable<PrivilegeGrant> findByGrantee(GranteeType granteeType, String granteeName) {
-    // Build search query
-    SearchQuery granteeNameQuery = SearchQuery.newBuilder()
-        .setEquals(PrivilegeGrantConverter.GRANTEE_NAME, granteeName)
-        .build();
+    // Build search query using SearchQueryUtils
+    SearchQuery granteeNameQuery = SearchQueryUtils.newTermQuery(
+        PrivilegeGrantConverter.GRANTEE_NAME, granteeName);
 
-    SearchQuery granteeTypeQuery = SearchQuery.newBuilder()
-        .setEquals(PrivilegeGrantConverter.GRANTEE_TYPE, granteeType.name())
-        .build();
+    SearchQuery granteeTypeQuery = SearchQueryUtils.newTermQuery(
+        PrivilegeGrantConverter.GRANTEE_TYPE, granteeType.name());
 
-    SearchQuery combinedQuery = SearchQuery.newBuilder()
-        .setAnd(granteeNameQuery, granteeTypeQuery)
-        .build();
+    SearchQuery combinedQuery = SearchQueryUtils.and(granteeNameQuery, granteeTypeQuery);
 
     LegacyFindByCondition condition = new LegacyFindByCondition()
         .setCondition(combinedQuery);
@@ -118,9 +115,8 @@ public class PrivilegeStore {
   public Iterable<PrivilegeGrant> findByResource(NamespaceKey resourcePath) {
     String resourcePathStr = PATH_JOINER.join(resourcePath.getPathComponents());
 
-    SearchQuery query = SearchQuery.newBuilder()
-        .setEquals(PrivilegeGrantConverter.RESOURCE_PATH, resourcePathStr)
-        .build();
+    SearchQuery query = SearchQueryUtils.newTermQuery(
+        PrivilegeGrantConverter.RESOURCE_PATH, resourcePathStr);
 
     LegacyFindByCondition condition = new LegacyFindByCondition()
         .setCondition(query);
@@ -139,21 +135,16 @@ public class PrivilegeStore {
   public PrivilegeGrant findGrant(GranteeType granteeType, String granteeName, NamespaceKey resourcePath) {
     String resourcePathStr = PATH_JOINER.join(resourcePath.getPathComponents());
 
-    SearchQuery granteeNameQuery = SearchQuery.newBuilder()
-        .setEquals(PrivilegeGrantConverter.GRANTEE_NAME, granteeName)
-        .build();
+    SearchQuery granteeNameQuery = SearchQueryUtils.newTermQuery(
+        PrivilegeGrantConverter.GRANTEE_NAME, granteeName);
 
-    SearchQuery granteeTypeQuery = SearchQuery.newBuilder()
-        .setEquals(PrivilegeGrantConverter.GRANTEE_TYPE, granteeType.name())
-        .build();
+    SearchQuery granteeTypeQuery = SearchQueryUtils.newTermQuery(
+        PrivilegeGrantConverter.GRANTEE_TYPE, granteeType.name());
 
-    SearchQuery resourceQuery = SearchQuery.newBuilder()
-        .setEquals(PrivilegeGrantConverter.RESOURCE_PATH, resourcePathStr)
-        .build();
+    SearchQuery resourceQuery = SearchQueryUtils.newTermQuery(
+        PrivilegeGrantConverter.RESOURCE_PATH, resourcePathStr);
 
-    SearchQuery combinedQuery = SearchQuery.newBuilder()
-        .setAnd(granteeNameQuery, granteeTypeQuery, resourceQuery)
-        .build();
+    SearchQuery combinedQuery = SearchQueryUtils.and(granteeNameQuery, granteeTypeQuery, resourceQuery);
 
     LegacyFindByCondition condition = new LegacyFindByCondition()
         .setCondition(combinedQuery);

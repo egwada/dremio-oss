@@ -51,6 +51,10 @@ public class PrivilegeGrantConverter implements DocumentConverter<String, Privil
   }
 
   @Override
+  public Integer getVersion() {
+    return 0; // Version 0 for initial implementation
+  }
+
   public Iterable<IndexKey> getIndexes() {
     return ImmutableList.of(GRANTEE_NAME, GRANTEE_TYPE, RESOURCE_PATH);
   }

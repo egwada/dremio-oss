@@ -263,7 +263,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       if (!existingPrivileges.contains(newPrivilege)) {
         existingPrivileges.add(newPrivilege);
 
-        PrivilegeGrant updatedGrant = PrivilegeGrant.newBuilder(existingGrant)
+        PrivilegeGrant updatedGrant = existingGrant.toBuilder()
             .clearPrivileges()
             .addAllPrivileges(existingPrivileges)
             .setWithGrantOption(withGrantOption)
@@ -334,7 +334,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       privilegeStore.delete(existingGrant.getGrantId());
     } else {
       // Update grant with remaining privileges
-      PrivilegeGrant updatedGrant = PrivilegeGrant.newBuilder(existingGrant)
+      PrivilegeGrant updatedGrant = existingGrant.toBuilder()
           .clearPrivileges()
           .addAllPrivileges(remainingPrivileges)
           .build();
