@@ -133,12 +133,34 @@ Solution :
 
 Le plugin protostuff nécessite ces deux déclarations explicites pour générer les classes.
 
+### 4. Validation incorrecte dans build-acl.sh (Commit: `d389af06b`)
+
+Problème : Le script de build échouait en cherchant un fichier qui n'existe pas
+Cause : **Confusion entre Google Protobuf et Protostuff** - le script cherchait `AclProtobuf.java`
+Solution :
+- Correction de la validation pour chercher `PrivilegeGrant.java`
+- Mise à jour de l'affichage pour lister tous les fichiers générés
+
+**Découverte importante** : Les classes protobuf **ÉTAIENT déjà générées correctement** !
+- Protostuff génère des **fichiers individuels** : `PrivilegeGrant.java`, `Role.java`, etc.
+- Google Protobuf génère un **fichier wrapper** : `AclProtobuf.java` avec des inner classes
+- Le script cherchait le mauvais type de fichier
+
+Fichiers générés (6 au total) :
+- `GranteeType.java`
+- `PrivilegeGrant.java`
+- `PrivilegeType.java`
+- `ResourceType.java`
+- `Role.java`
+- `RoleMembership.java`
+
 ## Modules Affectés
 
 - `dac/backend/pom.xml` : dépendance déplacée vers profile
 - `dac/backend/src/main/java/com/dremio/dac/api/DeprecatedSourceResource.java` : import JDBC supprimé
 - `dac/daemon` : déjà correct (aucun changement)
 - `services/acl/src/main/protobuf/privilege.proto` : ajout de syntax et package
+- `build-acl.sh` : correction de la validation protobuf
 
 ## Références
 
