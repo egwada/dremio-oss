@@ -111,7 +111,7 @@ services/acl/
 
 ## Testing
 
-### ✅ Unit Tests Created (Commits: `a6cd10608`, `ecb22adb0`, `0390fd082`)
+### ✅ Unit Tests Created and Compile Successfully (Commits: `a6cd10608`, `ecb22adb0`, `11da68ae6`, `9b898913e`)
 
 **4 Test Classes** with **17 Test Cases**:
 
@@ -143,6 +143,11 @@ services/acl/
 **Coverage Metrics**: ~45% line, ~40% branch, ~60% method
 **Framework**: JUnit 4 + Mockito
 **Documentation**: `TESTING.md`, `TEST_SUMMARY.md`
+**Status**: ✅ All tests compile successfully
+
+**Test Compilation Fixes**:
+- Added `throws Exception` to methods calling `start()`
+- Fixed ErrorProne warning: Changed `assertNotNull(primitive)` to `assertTrue(primitive > 0)`
 
 ### Running Tests
 ```bash
@@ -153,12 +158,13 @@ cd services/acl
 ## Next Steps
 
 1. ✅ ~~Fix compilation errors~~ - **DONE (26 errors fixed)**
-2. ✅ ~~Add unit tests~~ - **DONE (17 tests, all compile)**
-3. **Run and verify all tests pass**
-4. **Add integration tests** (grant/revoke workflows)
-5. **Run full build with `./build-acl.sh`**
-6. **Integrate into DACDaemonModule**
-7. **Phase 2: Enable SQL syntax**
+2. ✅ ~~Add unit tests~~ - **DONE (17 tests)**
+3. ✅ ~~Compile tests successfully~~ - **DONE (all tests compile)**
+4. **Run and verify all tests pass**
+5. **Add integration tests** (grant/revoke workflows)
+6. **Run full build with `./build-acl.sh`**
+7. **Integrate into DACDaemonModule**
+8. **Phase 2: Enable SQL syntax**
 
 ## Build Commands
 
