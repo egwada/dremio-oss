@@ -809,6 +809,14 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- ACL Service - Optional service for Access Control Lists -->
+    <!-- Scope 'provided' because it's registered at runtime in DACDaemonModule -->
+    <dependency>
+      <groupId>com.dremio.services</groupId>
+      <artifactId>dremio-services-acl</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
