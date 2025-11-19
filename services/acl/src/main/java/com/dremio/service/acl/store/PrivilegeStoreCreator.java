@@ -17,7 +17,7 @@ package com.dremio.service.acl.store;
 
 import com.dremio.datastore.api.LegacyIndexedStore;
 import com.dremio.datastore.api.LegacyIndexedStore.LegacyFindByCondition;
-import com.dremio.datastore.api.LegacyKVStoreCreationFunction;
+import com.dremio.datastore.api.LegacyIndexedStoreCreationFunction;
 import com.dremio.datastore.api.LegacyStoreBuildingFactory;
 import com.dremio.datastore.format.Format;
 import com.dremio.service.acl.proto.PrivilegeGrant;
@@ -30,7 +30,7 @@ import com.dremio.service.acl.proto.PrivilegeGrant;
  * Valeur: PrivilegeGrant protobuf
  */
 public final class PrivilegeStoreCreator
-    implements LegacyKVStoreCreationFunction<String, PrivilegeGrant> {
+    implements LegacyIndexedStoreCreationFunction<String, PrivilegeGrant> {
 
   public static final String PRIVILEGE_STORE_NAME = "acl_privileges";
 
