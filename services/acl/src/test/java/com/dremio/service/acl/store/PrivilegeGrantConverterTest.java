@@ -17,8 +17,14 @@ package com.dremio.service.acl.store;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-import com.dremio.datastore.SearchTypes;
+import com.dremio.datastore.api.DocumentWriter;
 import com.dremio.datastore.indexed.IndexKey;
 import com.dremio.service.acl.proto.GranteeType;
 import com.dremio.service.acl.proto.PrivilegeGrant;
@@ -55,20 +61,15 @@ public class PrivilegeGrantConverterTest {
     grant.setGrantedAt(System.currentTimeMillis());
     grant.setWithGrantOption(false);
 
+    DocumentWriter mockWriter = mock(DocumentWriter.class);
+
     // Act
-    Iterable<java.util.Map.Entry<String, SearchTypes.SearchFieldSorting.FieldType>> fields =
-        converter.convert(grant, null);
+    converter.convert(mockWriter, "grant-123", grant);
 
     // Assert
-    assertNotNull(fields);
-    // Verify fields are generated
-    int fieldCount = 0;
-    for (java.util.Map.Entry<String, SearchTypes.SearchFieldSorting.FieldType> field : fields) {
-      fieldCount++;
-      assertNotNull(field.getKey());
-      assertNotNull(field.getValue());
-    }
-    assertEquals(3, fieldCount); // grantee_name, grantee_type, resource_path
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.GRANTEE_NAME), eq("testuser"));
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.GRANTEE_TYPE), eq("USER"));
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.RESOURCE_PATH), eq("myspace.mytable"));
   }
 
   @Test
@@ -110,17 +111,15 @@ public class PrivilegeGrantConverterTest {
     grant.setGrantedAt(System.currentTimeMillis());
     grant.setWithGrantOption(true);
 
+    DocumentWriter mockWriter = mock(DocumentWriter.class);
+
     // Act
-    Iterable<java.util.Map.Entry<String, SearchTypes.SearchFieldSorting.FieldType>> fields =
-        converter.convert(grant, null);
+    converter.convert(mockWriter, "grant-456", grant);
 
     // Assert
-    assertNotNull(fields);
-    int fieldCount = 0;
-    for (java.util.Map.Entry<String, SearchTypes.SearchFieldSorting.FieldType> field : fields) {
-      fieldCount++;
-    }
-    assertEquals(3, fieldCount);
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.GRANTEE_NAME), eq("admin_role"));
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.GRANTEE_TYPE), eq("ROLE"));
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.RESOURCE_PATH), eq("myspace"));
   }
 
   @Test
@@ -137,11 +136,14 @@ public class PrivilegeGrantConverterTest {
     grant.setGrantedAt(System.currentTimeMillis());
     grant.setWithGrantOption(false);
 
+    DocumentWriter mockWriter = mock(DocumentWriter.class);
+
     // Act
-    Iterable<java.util.Map.Entry<String, SearchTypes.SearchFieldSorting.FieldType>> fields =
-        converter.convert(grant, null);
+    converter.convert(mockWriter, "grant-789", grant);
 
     // Assert - should still work with empty resource path
-    assertNotNull(fields);
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.GRANTEE_NAME), anyString());
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.GRANTEE_TYPE), anyString());
+    verify(mockWriter).write(eq(PrivilegeGrantConverter.RESOURCE_PATH), eq(""));
   }
 }

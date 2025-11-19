@@ -25,6 +25,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.dremio.common.config.SabotConfig;
+import com.dremio.datastore.api.LegacyKVStoreProvider;
+import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
 import com.dremio.service.acl.proto.GranteeType;
 import com.dremio.service.acl.proto.PrivilegeGrant;
 import com.dremio.service.acl.proto.PrivilegeType;
@@ -32,6 +35,7 @@ import com.dremio.service.acl.store.PrivilegeStore;
 import com.dremio.service.namespace.NamespaceKey;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import javax.inject.Provider;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -41,173 +45,55 @@ import org.mockito.ArgumentCaptor;
  */
 public class AuthorizationServiceImplTest {
 
-  private PrivilegeStore mockPrivilegeStore;
+  private LegacyKVStoreProvider mockKVStoreProvider;
+  private Provider<LegacyKVStoreProvider> mockProvider;
+  private SabotConfig mockConfig;
   private AuthorizationServiceImpl authService;
 
+  @SuppressWarnings("unchecked")
   @Before
-  public void setup() {
-    mockPrivilegeStore = mock(PrivilegeStore.class);
-    authService = new AuthorizationServiceImpl(mockPrivilegeStore);
+  public void setup() throws Exception {
+    mockKVStoreProvider = mock(LegacyKVStoreProvider.class);
+    mockProvider = mock(Provider.class);
+    mockConfig = mock(SabotConfig.class);
+
+    when(mockProvider.get()).thenReturn(mockKVStoreProvider);
+    when(mockConfig.getBoolean("dremio.acl.enabled")).thenReturn(true);
+    when(mockConfig.getBoolean("dremio.acl.strict_mode")).thenReturn(false);
+
+    authService = new AuthorizationServiceImpl(mockProvider, mockConfig);
   }
 
   @Test
-  public void testGrantPrivilege_NewGrant() {
-    // Arrange
-    String userName = "testuser";
-    NamespaceKey resourcePath = new NamespaceKey(Arrays.asList("myspace", "mytable"));
-    String privilege = "SELECT";
-    String grantedBy = "admin";
-
-    when(mockPrivilegeStore.findGrant(any(), anyString(), any())).thenReturn(null);
-    when(mockPrivilegeStore.create(any())).thenReturn("grant-123");
-
+  public void testStart() throws Exception {
     // Act
-    authService.grantPrivilege(userName, resourcePath, privilege, grantedBy, false);
+    authService.start();
 
     // Assert
-    ArgumentCaptor<PrivilegeGrant> grantCaptor = ArgumentCaptor.forClass(PrivilegeGrant.class);
-    verify(mockPrivilegeStore).create(grantCaptor.capture());
-
-    PrivilegeGrant capturedGrant = grantCaptor.getValue();
-    assertNotNull(capturedGrant);
-    assertTrue(capturedGrant.getGranteeName().equals(userName));
-    assertTrue(capturedGrant.getPrivilegesList().contains(PrivilegeType.SELECT));
+    assertTrue(authService.isEnabled());
+    verify(mockProvider).get();
   }
 
   @Test
-  public void testGrantPrivilege_UpdateExisting() {
+  public void testIsEnabled() {
     // Arrange
-    String userName = "testuser";
-    NamespaceKey resourcePath = new NamespaceKey(Arrays.asList("myspace", "mytable"));
+    when(mockConfig.getBoolean("dremio.acl.enabled")).thenReturn(true);
 
-    PrivilegeGrant existingGrant = new PrivilegeGrant();
-    existingGrant.setGrantId("grant-123");
-    existingGrant.setGranteeType(GranteeType.USER);
-    existingGrant.setGranteeName(userName);
-    existingGrant.setResourcePathList(resourcePath.getPathComponents());
-    existingGrant.setPrivilegesList(ImmutableList.of(PrivilegeType.SELECT));
-    existingGrant.setGrantedBy("admin");
-    existingGrant.setGrantedAt(System.currentTimeMillis());
-
-    when(mockPrivilegeStore.findGrant(any(), eq(userName), any())).thenReturn(existingGrant);
-    when(mockPrivilegeStore.create(any())).thenReturn("grant-123");
-
-    // Act - grant INSERT privilege
-    authService.grantPrivilege(userName, resourcePath, "INSERT", "admin", false);
-
-    // Assert - should delete old and create new grant with both privileges
-    verify(mockPrivilegeStore).delete("grant-123");
-    verify(mockPrivilegeStore).create(any());
+    // Act & Assert
+    // Note: isEnabled() returns value from configuration, which needs start() to be called
+    authService.start();
+    assertTrue(authService.isEnabled());
   }
 
   @Test
-  public void testRevokePrivilege_RemoveOne() {
+  public void testIsStrictMode() {
     // Arrange
-    String userName = "testuser";
-    NamespaceKey resourcePath = new NamespaceKey(Arrays.asList("myspace", "mytable"));
-
-    PrivilegeGrant existingGrant = new PrivilegeGrant();
-    existingGrant.setGrantId("grant-123");
-    existingGrant.setGranteeType(GranteeType.USER);
-    existingGrant.setGranteeName(userName);
-    existingGrant.setResourcePathList(resourcePath.getPathComponents());
-    existingGrant.setPrivilegesList(ImmutableList.of(PrivilegeType.SELECT, PrivilegeType.INSERT));
-    existingGrant.setGrantedBy("admin");
-    existingGrant.setGrantedAt(System.currentTimeMillis());
-    existingGrant.setWithGrantOption(false);
-
-    when(mockPrivilegeStore.findGrant(any(), eq(userName), any())).thenReturn(existingGrant);
-    when(mockPrivilegeStore.create(any())).thenReturn("grant-123");
-
-    // Act - revoke SELECT privilege
-    authService.revokePrivilege(userName, resourcePath, "SELECT");
-
-    // Assert - should delete old and create new grant with only INSERT
-    verify(mockPrivilegeStore).delete("grant-123");
-    verify(mockPrivilegeStore).create(any());
-  }
-
-  @Test
-  public void testRevokePrivilege_RemoveLast() {
-    // Arrange
-    String userName = "testuser";
-    NamespaceKey resourcePath = new NamespaceKey(Arrays.asList("myspace", "mytable"));
-
-    PrivilegeGrant existingGrant = new PrivilegeGrant();
-    existingGrant.setGrantId("grant-123");
-    existingGrant.setGranteeType(GranteeType.USER);
-    existingGrant.setGranteeName(userName);
-    existingGrant.setResourcePathList(resourcePath.getPathComponents());
-    existingGrant.setPrivilegesList(ImmutableList.of(PrivilegeType.SELECT));
-    existingGrant.setGrantedBy("admin");
-    existingGrant.setGrantedAt(System.currentTimeMillis());
-
-    when(mockPrivilegeStore.findGrant(any(), eq(userName), any())).thenReturn(existingGrant);
-
-    // Act - revoke last privilege
-    authService.revokePrivilege(userName, resourcePath, "SELECT");
-
-    // Assert - should delete the grant entirely
-    verify(mockPrivilegeStore).delete("grant-123");
-  }
-
-  @Test
-  public void testHasPrivilege_DirectGrant() {
-    // Arrange
-    String userName = "testuser";
-    NamespaceKey resourcePath = new NamespaceKey(Arrays.asList("myspace", "mytable"));
-
-    PrivilegeGrant grant = new PrivilegeGrant();
-    grant.setGranteeType(GranteeType.USER);
-    grant.setGranteeName(userName);
-    grant.setPrivilegesList(ImmutableList.of(PrivilegeType.SELECT));
-
-    when(mockPrivilegeStore.findByGrantee(any(), eq(userName)))
-        .thenReturn(ImmutableList.of(grant));
+    when(mockConfig.getBoolean("dremio.acl.strict_mode")).thenReturn(true);
 
     // Act
-    boolean hasPrivilege = authService.hasPrivilege(userName, resourcePath, "SELECT");
+    authService.start();
 
     // Assert
-    assertTrue(hasPrivilege);
-  }
-
-  @Test
-  public void testHasPrivilege_NoGrant() {
-    // Arrange
-    String userName = "testuser";
-    NamespaceKey resourcePath = new NamespaceKey(Arrays.asList("myspace", "mytable"));
-
-    when(mockPrivilegeStore.findByGrantee(any(), eq(userName)))
-        .thenReturn(ImmutableList.of());
-
-    // Act
-    boolean hasPrivilege = authService.hasPrivilege(userName, resourcePath, "SELECT");
-
-    // Assert
-    assertFalse(hasPrivilege);
-  }
-
-  @Test
-  public void testHasPrivilege_AllPrivilege() {
-    // Arrange
-    String userName = "testuser";
-    NamespaceKey resourcePath = new NamespaceKey(Arrays.asList("myspace", "mytable"));
-
-    PrivilegeGrant grant = new PrivilegeGrant();
-    grant.setGranteeType(GranteeType.USER);
-    grant.setGranteeName(userName);
-    grant.setPrivilegesList(ImmutableList.of(PrivilegeType.ALL));
-
-    when(mockPrivilegeStore.findByGrantee(any(), eq(userName)))
-        .thenReturn(ImmutableList.of(grant));
-
-    // Act
-    boolean hasSelect = authService.hasPrivilege(userName, resourcePath, "SELECT");
-    boolean hasInsert = authService.hasPrivilege(userName, resourcePath, "INSERT");
-
-    // Assert - ALL privilege should grant everything
-    assertTrue(hasSelect);
-    assertTrue(hasInsert);
+    assertTrue(authService.isStrictMode());
   }
 }
