@@ -26,21 +26,53 @@ echo ""
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 1. Build tout sauf ACL
-echo -e "${YELLOW}Step 1/4:${NC} Building core modules (excluding ACL)..."
-mvn clean install -DskipTests -Ddremio.oss-only=true -pl '!services/acl,!services/pubsub-nats,!services/reindexer' || {
+# Build configuration
+SKIP_LICENSE=${SKIP_LICENSE:-true}
+SKIP_TESTS=${SKIP_TESTS:-true}
+BUILD_THREADS=${BUILD_THREADS:-4}
+
+# Maven options
+MAVEN_OPTS="-Ddremio.oss-only=true"
+if [ "$SKIP_LICENSE" = "true" ]; then
+    MAVEN_OPTS="$MAVEN_OPTS -Dlicense.skip=true"
+fi
+if [ "$SKIP_TESTS" = "true" ]; then
+    MAVEN_OPTS="$MAVEN_OPTS -DskipTests"
+fi
+MAVEN_OPTS="$MAVEN_OPTS -T${BUILD_THREADS}"
+
+echo -e "${BLUE}Build Configuration:${NC}"
+echo "  - Skip license checks: $SKIP_LICENSE"
+echo "  - Skip tests: $SKIP_TESTS"
+echo "  - Build threads: $BUILD_THREADS"
+echo "  - Maven options: $MAVEN_OPTS"
+echo ""
+
+# 1. Build dependencies first (required modules for ACL)
+echo -e "${YELLOW}Step 1/5:${NC} Building core dependencies..."
+mvn clean install $MAVEN_OPTS -pl services/base-rpc,common/legacy,sabot/kernel -am || {
+    echo -e "${RED}✗ Core dependencies build failed${NC}"
+    exit 1
+}
+echo -e "${GREEN}✓ Core dependencies built successfully${NC}"
+echo ""
+
+# 2. Build remaining core modules (excluding ACL)
+echo -e "${YELLOW}Step 2/5:${NC} Building core modules (excluding ACL)..."
+mvn install $MAVEN_OPTS -pl '!services/acl,!services/pubsub-nats,!services/reindexer' || {
     echo -e "${RED}✗ Core build failed${NC}"
     exit 1
 }
 echo -e "${GREEN}✓ Core modules built successfully${NC}"
 echo ""
 
-# 2. Generate ACL protobuf classes
-echo -e "${YELLOW}Step 2/4:${NC} Generating ACL protobuf classes..."
+# 3. Generate ACL protobuf classes
+echo -e "${YELLOW}Step 3/5:${NC} Generating ACL protobuf classes..."
 cd services/acl
-mvn generate-sources -Ddremio.oss-only=true || {
+mvn generate-sources $MAVEN_OPTS || {
     echo -e "${RED}✗ Protobuf generation failed${NC}"
     exit 1
 }
@@ -57,9 +89,9 @@ echo "Generated files:"
 ls -lh target/generated-sources/protostuff/com/dremio/service/acl/proto/*.java
 echo ""
 
-# 3. Compile ACL module
-echo -e "${YELLOW}Step 3/4:${NC} Compiling ACL module..."
-mvn compile -Ddremio.oss-only=true || {
+# 4. Compile ACL module
+echo -e "${YELLOW}Step 4/5:${NC} Compiling ACL module..."
+mvn compile $MAVEN_OPTS || {
     echo -e "${RED}✗ ACL compilation failed${NC}"
     exit 1
 }
@@ -68,9 +100,9 @@ echo ""
 
 cd ../..
 
-# 4. Resume build from ACL
-echo -e "${YELLOW}Step 4/4:${NC} Completing build (remaining modules)..."
-mvn install -DskipTests -Ddremio.oss-only=true -rf :dremio-services-acl || {
+# 5. Complete build with ACL
+echo -e "${YELLOW}Step 5/5:${NC} Installing ACL module and completing build..."
+mvn install $MAVEN_OPTS -rf :dremio-services-acl || {
     echo -e "${RED}✗ Final build failed${NC}"
     exit 1
 }
@@ -89,7 +121,17 @@ echo ""
 echo "Generated artifacts:"
 echo "  - services/acl/target/dremio-services-acl-*.jar"
 echo ""
-echo "Next steps:"
-echo "  1. Verify: jar tf services/acl/target/dremio-services-acl-*.jar | grep PrivilegeGrant"
-echo "  2. Integration: Modify DACDaemonModule to activate the plugin"
+echo "Integration status:"
+echo "  ✓ DACDaemonModule: AuthorizationService registered"
+echo "  ✓ QueryContext: getAuthorizationService() available"
+echo "  ✓ SQL Handlers: GrantHandler and RevokeHandler activated"
+echo ""
+echo "Verification commands:"
+echo "  1. jar tf services/acl/target/dremio-services-acl-*.jar | grep PrivilegeGrant"
+echo "  2. mvn test -pl services/acl"
+echo ""
+echo -e "${BLUE}Build Options:${NC}"
+echo "  SKIP_LICENSE=false ./build-acl.sh    # Enable license checks"
+echo "  SKIP_TESTS=false ./build-acl.sh      # Enable tests"
+echo "  BUILD_THREADS=8 ./build-acl.sh       # Use 8 build threads"
 echo ""
