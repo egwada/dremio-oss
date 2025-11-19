@@ -17,6 +17,7 @@
 
 -->
 <extensions>
+    <!-- TEMPORARILY DISABLED: Network issues with maven-profiler and maven-notifier
     <extension>
       <groupId>fr.jcgay.maven</groupId>
       <artifactId>maven-profiler</artifactId>
@@ -28,12 +29,9 @@
       <version>2.1.2</version>
     </extension>
     <extension>
-      <!-- Disabled by default.
-           Check https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/maven-extension for configuration.
-      -->
       <groupId>io.opentelemetry.contrib</groupId>
       <artifactId>opentelemetry-maven-extension</artifactId>
-      <!-- https://github.com/open-telemetry/opentelemetry-java-contrib/releases -->
       <version>1.36.0-alpha</version>
     </extension>
+    -->
 </extensions>
