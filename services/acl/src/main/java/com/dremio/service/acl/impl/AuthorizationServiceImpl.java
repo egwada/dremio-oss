@@ -88,15 +88,28 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     // Initialize stores
-    LegacyKVStoreProvider kvStoreProvider = kvStoreProviderProvider.get();
-    this.privilegeStore = new PrivilegeStore(kvStoreProvider);
-    this.permissionEvaluator = new PermissionEvaluator(privilegeStore);
+    try {
+      LegacyKVStoreProvider kvStoreProvider = kvStoreProviderProvider.get();
+      this.privilegeStore = new PrivilegeStore(kvStoreProvider);
+      this.permissionEvaluator = new PermissionEvaluator(privilegeStore);
 
-    // Initialize cache
-    initializeCache();
+      // Initialize cache
+      initializeCache();
 
-    logger.info("AuthorizationService started (mode: {}, strictMode: {})",
-        enabled ? "enabled" : "disabled", strictMode);
+      logger.info(
+          "AuthorizationService started (mode: {}, strictMode: {})",
+          enabled ? "enabled" : "disabled",
+          strictMode);
+    } catch (Exception e) {
+      logger.error(
+          "Failed to initialize ACL stores. ACL service will be disabled. "
+              + "Make sure the ACL module is properly compiled and included in the distribution.",
+          e);
+      // Disable the service if initialization fails
+      this.enabled = false;
+      this.privilegeStore = null;
+      this.permissionEvaluator = null;
+    }
   }
 
   @Override
