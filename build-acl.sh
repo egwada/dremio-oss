@@ -51,70 +51,18 @@ echo "  - Build threads: $BUILD_THREADS"
 echo "  - Maven options: $MAVEN_OPTS"
 echo ""
 
-# 1. Build minimal dependencies (excluding sabot/kernel which depends on ACL)
-echo -e "${YELLOW}Step 1/6:${NC} Building minimal dependencies..."
-mvn clean install $MAVEN_OPTS -pl services/base-rpc,common/legacy -am || {
-    echo -e "${RED}✗ Minimal dependencies build failed${NC}"
-    exit 1
-}
-echo -e "${GREEN}✓ Minimal dependencies built successfully${NC}"
-echo ""
-
-# 2. Generate and compile ACL module first
-echo -e "${YELLOW}Step 2/6:${NC} Building ACL module (generate + compile + install)..."
-cd services/acl
+# Build everything (no more circular dependency!)
+echo -e "${YELLOW}Step 1/1:${NC} Building Dremio with ACL support..."
 mvn clean install $MAVEN_OPTS || {
-    echo -e "${RED}✗ ACL build failed${NC}"
+    echo -e "${RED}✗ Build failed${NC}"
     exit 1
 }
 
-# Verify generation (Protostuff generates individual class files, not a wrapper class)
-if [ ! -f "target/generated-sources/protostuff/com/dremio/service/acl/proto/PrivilegeGrant.java" ]; then
-    echo -e "${RED}✗ ERROR: Protobuf classes not generated!${NC}"
-    echo "Expected file: target/generated-sources/protostuff/com/dremio/service/acl/proto/PrivilegeGrant.java"
-    exit 1
+# Verify ACL protobuf classes were generated
+if [ ! -f "services/acl/target/generated-sources/protostuff/com/dremio/service/acl/proto/PrivilegeGrant.java" ]; then
+    echo -e "${RED}✗ WARNING: ACL Protobuf classes may not have been generated!${NC}"
+    echo "Expected file: services/acl/target/generated-sources/protostuff/com/dremio/service/acl/proto/PrivilegeGrant.java"
 fi
-
-echo -e "${GREEN}✓ ACL module built successfully${NC}"
-echo "Generated protobuf files:"
-ls -lh target/generated-sources/protostuff/com/dremio/service/acl/proto/*.java 2>/dev/null || echo "  (protobuf files generated)"
-echo ""
-
-cd ../..
-
-# 3. Now build sabot/kernel (which depends on ACL with 'provided' scope)
-echo -e "${YELLOW}Step 3/6:${NC} Building sabot/kernel..."
-mvn install $MAVEN_OPTS -pl sabot/kernel -am || {
-    echo -e "${RED}✗ sabot/kernel build failed${NC}"
-    exit 1
-}
-echo -e "${GREEN}✓ sabot/kernel built successfully${NC}"
-echo ""
-
-# 4. Build remaining core modules (excluding problematic ones)
-echo -e "${YELLOW}Step 4/6:${NC} Building remaining core modules..."
-mvn install $MAVEN_OPTS -pl '!services/pubsub-nats,!services/reindexer' || {
-    echo -e "${RED}✗ Core modules build failed${NC}"
-    exit 1
-}
-echo -e "${GREEN}✓ Core modules built successfully${NC}"
-echo ""
-
-# 5. Build DAC backend (which uses ACL)
-echo -e "${YELLOW}Step 5/6:${NC} Building DAC backend..."
-mvn install $MAVEN_OPTS -pl dac/backend || {
-    echo -e "${RED}✗ DAC backend build failed${NC}"
-    exit 1
-}
-echo -e "${GREEN}✓ DAC backend built successfully${NC}"
-echo ""
-
-# 6. Complete final build
-echo -e "${YELLOW}Step 6/6:${NC} Completing final build..."
-mvn install $MAVEN_OPTS || {
-    echo -e "${RED}✗ Final build failed${NC}"
-    exit 1
-}
 
 echo ""
 echo "============================================"

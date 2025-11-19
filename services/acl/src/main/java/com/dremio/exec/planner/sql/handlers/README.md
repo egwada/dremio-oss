@@ -1,73 +1,62 @@
-# SQL Handlers for GRANT/REVOKE
+# SQL Handlers - Moved to sabot/kernel
 
-**Status**: ✅ **ACTIVATED** - Handlers enabled and ready for integration
+Les SQL handlers pour GRANT/REVOKE ont été **déplacés vers `sabot/kernel`** pour éviter une dépendance circulaire.
 
-## Files
+## Localisation actuelle
 
-- `GrantHandler.java` - Handler for SQL GRANT command ✅
-- `RevokeHandler.java` - Handler for SQL REVOKE command ✅
-
-## What Changed?
-
-The handlers are now **activated**! SqlGrant and SqlRevoke classes already exist in Dremio OSS (`sabot/kernel/src/main/java/com/dremio/exec/planner/sql/parser/`), so the handlers have been renamed from `.java.future` to `.java` and are ready to use.
-
-## Current Status
-
-✅ SQL parser support exists (`SqlGrant` and `SqlRevoke` classes)
-✅ Handlers activated and will be loaded via reflection
-✅ Handlers properly structured with error messages for missing integration
-⏸️ Waiting for QueryContext integration to provide AuthorizationService
-
-## Phase 1 MVP
-
-The AuthorizationService can be used **programmatically** without SQL syntax:
-
-```java
-AuthorizationService aclService = ...;
-aclService.grantPrivilege(
-    GranteeType.USER,
-    "john.doe",
-    new NamespaceKey(Arrays.asList("S3", "data", "sales")),
-    Privilege.SELECT,
-    "admin",
-    false
-);
+Les handlers se trouvent maintenant dans :
+```
+sabot/kernel/src/main/java/com/dremio/exec/planner/sql/handlers/
+├── GrantHandler.java
+└── RevokeHandler.java
 ```
 
-## Next Step: QueryContext Integration
+## Raison du déplacement
 
-To fully enable SQL GRANT/REVOKE commands, add AuthorizationService to QueryContext:
+**Problème** : Dépendance circulaire Maven
+- `services/acl` avait besoin de `sabot/kernel` (pour QueryContext, Catalog, SqlGrant)
+- `sabot/kernel` avait besoin de `services/acl` (pour AuthorizationService)
+- Maven détectait un cycle même avec scope `provided`
 
-1. **Modify QueryContext** (`sabot/kernel/src/main/java/com/dremio/exec/ops/QueryContext.java`):
-   ```java
-   // Add field
-   private final AuthorizationService authorizationService;
+**Solution** : Déplacer les handlers dans `sabot/kernel`
+- Les handlers SQL font logiquement partie de la couche d'exécution SQL
+- `sabot/kernel` a déjà tous les autres SQL handlers
+- `sabot/kernel` peut dépendre de `services/acl` en scope `provided`
+- Pas de cycle !
 
-   // Add to constructor
-   public QueryContext(..., AuthorizationService authorizationService) {
-     this.authorizationService = authorizationService;
-   }
+## Architecture finale
 
-   // Add getter
-   public AuthorizationService getAuthorizationService() {
-     return authorizationService;
-   }
-   ```
+```
+services/acl/
+├── AuthorizationService (interface)
+├── AuthorizationServiceImpl (implémentation)
+├── AclStore (stockage)
+├── AclValidator (validation)
+└── proto/ (modèles de données)
 
-2. **Update GrantHandler and RevokeHandler** to use the new getter:
-   ```java
-   private AuthorizationService getAclService() {
-     return context.getAuthorizationService();
-   }
-   ```
+sabot/kernel/
+├── QueryContext (avec getAuthorizationService())
+├── SabotQueryContext (avec getAuthorizationService())
+└── handlers/
+    ├── GrantHandler (utilise AuthorizationService)
+    └── RevokeHandler (utilise AuthorizationService)
 
-3. **Test** SQL commands:
-   ```sql
-   GRANT SELECT ON DATASET "myspace"."mytable" TO USER "john.doe";
-   REVOKE SELECT ON DATASET "myspace"."mytable" FROM USER "john.doe";
-   ```
+dac/backend/
+└── DACDaemonModule (enregistre AuthorizationService)
+```
 
-## References
+## Activation
 
-- Design: `/services/acl/DESIGN_ACL_PLUGIN.md`
-- Similar patterns: TRUNCATE TABLE handler in `/sabot/kernel/`
+Les handlers sont activés via :
+1. QueryContext fournit `getAuthorizationService()`
+2. DACDaemonModule enregistre AuthorizationService
+3. Les handlers sont découverts automatiquement par réflexion
+
+## Utilisation SQL
+
+```sql
+GRANT SELECT ON DATASET "myspace"."mytable" TO USER "john.doe";
+REVOKE SELECT ON DATASET "myspace"."mytable" FROM USER "john.doe";
+```
+
+**Status**: ✅ **READY** - Handlers déplacés et intégrés

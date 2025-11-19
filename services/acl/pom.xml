@@ -62,15 +62,6 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- Sabot (for SqlGrant, Catalog, etc.) -->
-    <!-- Scope 'provided' to avoid circular dependency: kernel also depends on ACL -->
-    <dependency>
-      <groupId>com.dremio.sabot</groupId>
-      <artifactId>dremio-sabot-kernel</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
     <!-- Protostuff -->
     <dependency>
       <groupId>io.protostuff</groupId>
