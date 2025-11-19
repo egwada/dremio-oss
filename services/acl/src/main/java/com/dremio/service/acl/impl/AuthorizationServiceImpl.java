@@ -244,8 +244,15 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     Preconditions.checkNotNull(privilege, "privilege is required");
     Preconditions.checkNotNull(grantedBy, "grantedBy is required");
 
-    logger.info("Granting privilege: granteeType={}, granteeName={}, resource={}, privilege={}, grantedBy={}, withGrantOption={}",
-        granteeType, granteeName, resourcePath, privilege, grantedBy, withGrantOption);
+    logger.info(
+        "Granting privilege: granteeType={}, granteeName={}, resource={}, privilege={}, "
+            + "grantedBy={}, withGrantOption={}",
+        granteeType,
+        granteeName,
+        resourcePath,
+        privilege,
+        grantedBy,
+        withGrantOption);
 
     // Phase 1 MVP: Only support USER
     if (granteeType == GranteeType.ROLE) {
