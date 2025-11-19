@@ -16,7 +16,6 @@
 package com.dremio.service.acl;
 
 import com.dremio.common.AutoCloseables;
-import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
 import com.dremio.service.Service;
 import com.dremio.service.acl.exception.AclException;
 import com.dremio.service.acl.proto.GranteeType;

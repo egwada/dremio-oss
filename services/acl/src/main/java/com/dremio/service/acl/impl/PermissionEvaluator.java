@@ -15,7 +15,7 @@
  */
 package com.dremio.service.acl.impl;
 
-import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
+import com.dremio.service.acl.Privilege;
 import com.dremio.service.acl.proto.GranteeType;
 import com.dremio.service.acl.proto.PrivilegeGrant;
 import com.dremio.service.acl.proto.PrivilegeType;

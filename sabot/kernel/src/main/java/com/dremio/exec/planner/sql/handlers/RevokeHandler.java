@@ -80,7 +80,7 @@ public class RevokeHandler extends SimpleDirectHandler {
             granteeType,
             granteeName,
             resourcePath,
-            privilege,
+            toAclPrivilege(privilege),
             currentUser
         );
       } catch (AclException e) {
@@ -159,5 +159,13 @@ public class RevokeHandler extends SimpleDirectHandler {
     }
 
     return privileges;
+  }
+
+  /**
+   * Converts SQL parser Privilege enum to ACL service Privilege enum.
+   * This conversion is necessary to avoid circular dependency between sabot/kernel and services/acl.
+   */
+  private com.dremio.service.acl.Privilege toAclPrivilege(Privilege sqlPrivilege) {
+    return com.dremio.service.acl.Privilege.valueOf(sqlPrivilege.name());
   }
 }
