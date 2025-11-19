@@ -41,13 +41,19 @@ SKIP_LICENSE=false SKIP_TESTS=false BUILD_THREADS=8 ./build-acl.sh
 
 ### Étapes de build
 
-Le script exécute 5 étapes :
+Le script exécute 6 étapes pour gérer la dépendance circulaire entre ACL et sabot/kernel :
 
-1. **Build des dépendances core** : Compile `services/base-rpc`, `common/legacy`, `sabot/kernel`
-2. **Build des modules core** : Compile tous les modules sauf ACL, pubsub-nats, reindexer
-3. **Génération protobuf** : Génère les classes Java depuis les fichiers `.proto`
-4. **Compilation ACL** : Compile le module ACL avec les classes générées
-5. **Installation finale** : Installe le module ACL et complète le build
+1. **Build dépendances minimales** : Compile `services/base-rpc`, `common/legacy` (sans sabot/kernel)
+2. **Build ACL d'abord** : Génère protobuf + compile + installe le module ACL
+3. **Build sabot/kernel** : Compile sabot/kernel (qui dépend de ACL en scope 'provided')
+4. **Build modules core** : Compile tous les modules restants (sauf pubsub-nats, reindexer)
+5. **Build DAC backend** : Compile le backend qui utilise AuthorizationService
+6. **Installation finale** : Complète le build de tous les modules restants
+
+**Note sur la dépendance circulaire** :
+- `sabot/kernel` a besoin de ACL pour compiler (QueryContext référence AuthorizationService)
+- ACL a besoin de sabot/kernel pour compiler (SQL handlers référencent QueryContext)
+- Solution : ACL est en scope `provided` dans sabot/kernel, et on compile ACL en premier
 
 ### Gestion des erreurs de licence
 
@@ -142,12 +148,31 @@ mvn verify -Ddremio.oss-only=true -Dlicense.skip=true
 
 ### Dépendances requises
 
-Le module ACL nécessite que ces modules soient compilés en premier :
-- `services/base-rpc` - Infrastructure RPC
-- `common/legacy` - Classes communes legacy
-- `sabot/kernel` - Noyau d'exécution Sabot
+**Ordre de compilation** (géré automatiquement par le script) :
 
-Le script gère automatiquement ces dépendances.
+1. **Dépendances de base** :
+   - `services/base-rpc` - Infrastructure RPC
+   - `common/legacy` - Classes communes legacy
+
+2. **Module ACL** : Compilé en premier pour résoudre la dépendance circulaire
+
+3. **sabot/kernel** : Dépend de ACL avec scope `provided`
+   ```xml
+   <dependency>
+     <groupId>com.dremio.services</groupId>
+     <artifactId>dremio-services-acl</artifactId>
+     <version>${project.version}</version>
+     <scope>provided</scope>
+   </dependency>
+   ```
+   Le scope `provided` signifie :
+   - ACL est nécessaire pour la compilation
+   - Mais ACL sera fourni au runtime par DACDaemonModule
+   - Évite d'inclure ACL dans le classpath de kernel
+
+4. **Reste des modules** : Compilés normalement
+
+Le script gère automatiquement cet ordre complexe.
 
 ### Troubleshooting
 
