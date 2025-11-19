@@ -1529,12 +1529,11 @@ public class DACDaemonModule implements DACModule {
               searchService));
 
       // ACL Service - Access Control Lists (optional, disabled by default)
-      registry.bind(
-          AuthorizationService.class,
+      final AuthorizationServiceImpl authorizationService =
           new AuthorizationServiceImpl(
-              registry.provider(LegacyKVStoreProvider.class),
-              bootstrap.getConfig()));
-      registry.bindSelf(AuthorizationService.class);
+              registry.provider(LegacyKVStoreProvider.class), bootstrap.getConfig());
+      registry.bind(AuthorizationService.class, authorizationService);
+      registry.bindSelf(authorizationService);
 
       registry.bind(
           RestApiServerFactory.class,
