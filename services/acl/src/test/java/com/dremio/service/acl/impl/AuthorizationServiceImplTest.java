@@ -75,7 +75,7 @@ public class AuthorizationServiceImplTest {
   }
 
   @Test
-  public void testIsEnabled() {
+  public void testIsEnabled() throws Exception {
     // Arrange
     when(mockConfig.getBoolean("dremio.acl.enabled")).thenReturn(true);
 
@@ -86,7 +86,7 @@ public class AuthorizationServiceImplTest {
   }
 
   @Test
-  public void testIsStrictMode() {
+  public void testIsStrictMode() throws Exception {
     // Arrange
     when(mockConfig.getBoolean("dremio.acl.strict_mode")).thenReturn(true);
 
