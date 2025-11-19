@@ -588,6 +588,17 @@ public class QueryContext
     return sabotQueryContext.getNamespaceService(SYSTEM_USERNAME);
   }
 
+  /**
+   * Returns the AuthorizationService for ACL (Access Control List) operations.
+   * This service is optional and may return null if ACL functionality is not enabled
+   * or not available in the current deployment.
+   *
+   * @return AuthorizationService instance, or null if not available
+   */
+  public com.dremio.service.acl.AuthorizationService getAuthorizationService() {
+    return sabotQueryContext.getAuthorizationService();
+  }
+
   public boolean isCloud() {
     return !sabotQueryContext.getCoordinatorModeInfoProvider().get().isInSoftwareMode();
   }

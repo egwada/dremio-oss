@@ -102,19 +102,15 @@ public class RevokeHandler extends SimpleDirectHandler {
   }
 
   private AuthorizationService getAclService() {
-    // TODO: Add getAuthorizationService() method to QueryContext
-    // For now, this will throw an error until QueryContext is updated to provide the service
-    //
-    // Required changes:
-    // 1. Add AuthorizationService field to QueryContext
-    // 2. Add getAuthorizationService() method to QueryContext
-    // 3. Inject AuthorizationService in QueryContext constructor
-    //
-    // Alternative: Use ServiceRegistry or ServiceResolver pattern
-    throw UserException.unsupportedError()
-        .message("REVOKE command requires ACL service integration. " +
-                 "Add AuthorizationService to QueryContext to enable this feature.")
-        .buildSilently();
+    AuthorizationService service = context.getAuthorizationService();
+    if (service == null) {
+      throw UserException.unsupportedError()
+          .message("ACL service is not available. " +
+                   "The AuthorizationService must be registered in SabotContext to enable REVOKE commands. " +
+                   "See services/acl/INTEGRATION_GUIDE.md for setup instructions.")
+          .buildSilently();
+    }
+    return service;
   }
 
   private GranteeType convertGranteeType(SqlLiteral granteeTypeLiteral) {
