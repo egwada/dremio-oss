@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AuthorizationServiceImpl implements AuthorizationService {
   private static final Logger logger = LoggerFactory.getLogger(AuthorizationServiceImpl.class);
-  private static final Logger auditLogger = LoggerFactory.getLogger("dremio.acl.audit");
+  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("dremio.acl.audit");
 
   private static final String CONFIG_PREFIX = "dremio.acl";
   private static final Joiner PATH_JOINER = Joiner.on(".");
@@ -198,7 +198,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     // Audit log denial
     if (!allowed && config.getBoolean(CONFIG_PREFIX + ".audit.log_denials")) {
-      auditLogger.warn("PERMISSION_DENIED: user={}, resource={}, privilege={}",
+      AUDIT_LOGGER.warn("PERMISSION_DENIED: user={}, resource={}, privilege={}",
           username, resourcePath, privilege);
     }
 
@@ -305,7 +305,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     // Audit log
     if (config.getBoolean(CONFIG_PREFIX + ".audit.log_changes")) {
-      auditLogger.info("GRANT {} ON {} TO {} BY {} (WITH_GRANT_OPTION: {})",
+      AUDIT_LOGGER.info("GRANT {} ON {} TO {} BY {} (WITH_GRANT_OPTION: {})",
           privilege, resourcePath, granteeName, grantedBy, withGrantOption);
     }
   }
@@ -369,7 +369,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     // Audit log
     if (config.getBoolean(CONFIG_PREFIX + ".audit.log_changes")) {
-      auditLogger.info("REVOKE {} ON {} FROM {} BY {}",
+      AUDIT_LOGGER.info("REVOKE {} ON {} FROM {} BY {}",
           privilege, resourcePath, granteeName, revokedBy);
     }
   }
@@ -455,14 +455,26 @@ public class AuthorizationServiceImpl implements AuthorizationService {
    */
   @VisibleForTesting
   static class PermissionCacheKey {
-    final String username;
-    final String resourcePath;
-    final Privilege privilege;
+    private final String username;
+    private final String resourcePath;
+    private final Privilege privilege;
 
     PermissionCacheKey(String username, NamespaceKey resourcePath, Privilege privilege) {
       this.username = username;
       this.resourcePath = PATH_JOINER.join(resourcePath.getPathComponents());
       this.privilege = privilege;
+    }
+
+    public String getUsername() {
+      return username;
+    }
+
+    public String getResourcePath() {
+      return resourcePath;
+    }
+
+    public Privilege getPrivilege() {
+      return privilege;
     }
 
     @Override
@@ -474,9 +486,9 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         return false;
       }
       PermissionCacheKey that = (PermissionCacheKey) o;
-      return Objects.equals(username, that.username) &&
-          Objects.equals(resourcePath, that.resourcePath) &&
-          privilege == that.privilege;
+      return Objects.equals(username, that.getUsername())
+          && Objects.equals(resourcePath, that.getResourcePath())
+          && privilege == that.getPrivilege();
     }
 
     @Override
