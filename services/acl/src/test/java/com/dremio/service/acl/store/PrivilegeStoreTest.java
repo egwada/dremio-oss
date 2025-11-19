@@ -18,6 +18,7 @@ package com.dremio.service.acl.store;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -80,7 +81,7 @@ public class PrivilegeStoreTest {
 
     PrivilegeGrant savedGrant = captor.getValue();
     assertNotNull(savedGrant.getGrantId());
-    assertNotNull(savedGrant.getGrantedAt());
+    assertTrue(savedGrant.getGrantedAt() > 0);
     assertEquals("testuser", savedGrant.getGranteeName());
   }
 
