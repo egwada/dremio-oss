@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 import com.dremio.common.config.SabotConfig;
 import com.dremio.datastore.api.LegacyKVStoreProvider;
-import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
+import com.dremio.service.acl.Privilege;
 import com.dremio.service.acl.proto.GranteeType;
 import com.dremio.service.acl.proto.PrivilegeGrant;
 import com.dremio.service.acl.proto.PrivilegeType;
