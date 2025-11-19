@@ -1,20 +1,22 @@
-# SQL Handlers for GRANT/REVOKE (Phase 2)
+# SQL Handlers for GRANT/REVOKE
 
-**Status**: Disabled for Phase 1 MVP
+**Status**: ✅ **ACTIVATED** - Handlers enabled and ready for integration
 
 ## Files
 
-- `GrantHandler.java.future` - Handler for SQL GRANT command
-- `RevokeHandler.java.future` - Handler for SQL REVOKE command
+- `GrantHandler.java` - Handler for SQL GRANT command ✅
+- `RevokeHandler.java` - Handler for SQL REVOKE command ✅
 
-## Why Disabled?
+## What Changed?
 
-These handlers depend on SQL parser support (`SqlGrant` and `SqlRevoke` classes) that doesn't exist yet in Dremio OSS.
+The handlers are now **activated**! SqlGrant and SqlRevoke classes already exist in Dremio OSS (`sabot/kernel/src/main/java/com/dremio/exec/planner/sql/parser/`), so the handlers have been renamed from `.java.future` to `.java` and are ready to use.
 
-The Dremio SQL parser needs to be extended to support:
-1. GRANT privilege syntax
-2. REVOKE privilege syntax
-3. SqlGrant and SqlRevoke AST nodes
+## Current Status
+
+✅ SQL parser support exists (`SqlGrant` and `SqlRevoke` classes)
+✅ Handlers activated and will be loaded via reflection
+✅ Handlers properly structured with error messages for missing integration
+⏸️ Waiting for QueryContext integration to provide AuthorizationService
 
 ## Phase 1 MVP
 
@@ -32,25 +34,38 @@ aclService.grantPrivilege(
 );
 ```
 
-## Phase 2: Enable SQL Support
+## Next Step: QueryContext Integration
 
-To enable SQL GRANT/REVOKE:
+To fully enable SQL GRANT/REVOKE commands, add AuthorizationService to QueryContext:
 
-1. Add SQL grammar to `/sabot/grammar/src/main/codegen/includes/parserImpls.ftl`:
+1. **Modify QueryContext** (`sabot/kernel/src/main/java/com/dremio/exec/ops/QueryContext.java`):
+   ```java
+   // Add field
+   private final AuthorizationService authorizationService;
+
+   // Add to constructor
+   public QueryContext(..., AuthorizationService authorizationService) {
+     this.authorizationService = authorizationService;
+   }
+
+   // Add getter
+   public AuthorizationService getAuthorizationService() {
+     return authorizationService;
+   }
    ```
-   GRANT privilege ON resource TO USER/ROLE grantee
-   REVOKE privilege ON resource FROM USER/ROLE grantee
+
+2. **Update GrantHandler and RevokeHandler** to use the new getter:
+   ```java
+   private AuthorizationService getAclService() {
+     return context.getAuthorizationService();
+   }
    ```
 
-2. Create SqlGrant.java and SqlRevoke.java in `/sabot/grammar/src/main/java/com/dremio/exec/planner/sql/parser/`
-
-3. Rename `.java.future` files back to `.java`:
-   ```bash
-   mv Grant Handler.java.future GrantHandler.java
-   mv RevokeHandler.java.future RevokeHandler.java
+3. **Test** SQL commands:
+   ```sql
+   GRANT SELECT ON DATASET "myspace"."mytable" TO USER "john.doe";
+   REVOKE SELECT ON DATASET "myspace"."mytable" FROM USER "john.doe";
    ```
-
-4. Update GrantHandler and RevokeHandler to properly inject AuthorizationService from QueryContext
 
 ## References
 

@@ -73,9 +73,9 @@ services/acl/
 │   └── exception/
 │       └── AclException.java ✅
 ├── src/main/java/com/dremio/exec/planner/sql/handlers/
-│   ├── GrantHandler.java.future ⏸️ (Phase 2)
-│   ├── RevokeHandler.java.future ⏸️ (Phase 2)
-│   └── README.md 📄
+│   ├── GrantHandler.java ✅ (Activated)
+│   ├── RevokeHandler.java ✅ (Activated)
+│   └── README.md 📄 (Updated with integration guide)
 └── src/main/protobuf/
     └── privilege.proto ✅
 ```
@@ -102,12 +102,14 @@ services/acl/
 - Intercepts table access
 - validates privileges before operations
 
-## What's Disabled (Phase 2)
+## SQL GRANT/REVOKE Handlers
 
-⏸️ **SQL GRANT/REVOKE Syntax**
-- Handlers exist but disabled
-- Require SQL parser extensions
-- Can be re-enabled after parser work
+✅ **SQL Handlers Activated** (Commit: TBD)
+- GrantHandler.java and RevokeHandler.java activated
+- SqlGrant and SqlRevoke classes already exist in Dremio OSS
+- Handlers will be loaded via reflection when SQL commands are executed
+- **Next Step**: Add AuthorizationService to QueryContext for full integration
+- See: `src/main/java/com/dremio/exec/planner/sql/handlers/README.md` for integration guide
 
 ## Testing
 
@@ -160,11 +162,12 @@ cd services/acl
 1. ✅ ~~Fix compilation errors~~ - **DONE (26 errors fixed)**
 2. ✅ ~~Add unit tests~~ - **DONE (17 tests)**
 3. ✅ ~~Compile tests successfully~~ - **DONE (all tests compile)**
-4. **Run and verify all tests pass**
-5. **Add integration tests** (grant/revoke workflows)
-6. **Run full build with `./build-acl.sh`**
-7. **Integrate into DACDaemonModule**
-8. **Phase 2: Enable SQL syntax**
+4. ✅ ~~Integrate into DACDaemonModule~~ - **DONE (service registered)**
+5. ✅ ~~Activate SQL handlers~~ - **DONE (handlers enabled)**
+6. **Add AuthorizationService to QueryContext** (for SQL GRANT/REVOKE)
+7. **Run and verify all tests pass**
+8. **Add integration tests** (grant/revoke workflows)
+9. **Run full build and test end-to-end**
 
 ## Build Commands
 

@@ -63,6 +63,8 @@ import com.dremio.dac.service.search.SearchService;
 import com.dremio.dac.service.search.SearchServiceImpl;
 import com.dremio.dac.service.search.SearchServiceInvoker;
 import com.dremio.dac.service.source.SourceService;
+import com.dremio.service.acl.AuthorizationService;
+import com.dremio.service.acl.impl.AuthorizationServiceImpl;
 import com.dremio.dac.service.sysflight.SysFlightTablesProvider.JobsTable;
 import com.dremio.dac.service.sysflight.SysFlightTablesProvider.MaterializationsTable;
 import com.dremio.dac.service.sysflight.SysFlightTablesProvider.RecentJobsTable;
@@ -1525,6 +1527,14 @@ public class DACDaemonModule implements DACModule {
               registry.provider(FabricService.class),
               bootstrap.getAllocator(),
               searchService));
+
+      // ACL Service - Access Control Lists (optional, disabled by default)
+      registry.bind(
+          AuthorizationService.class,
+          new AuthorizationServiceImpl(
+              registry.provider(LegacyKVStoreProvider.class),
+              bootstrap.getConfig()));
+      registry.bindSelf(AuthorizationService.class);
 
       registry.bind(
           RestApiServerFactory.class,

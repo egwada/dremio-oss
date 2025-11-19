@@ -16,11 +16,12 @@
 package com.dremio.exec.planner.sql.handlers;
 
 import com.dremio.common.exceptions.UserException;
+import com.dremio.exec.catalog.Catalog;
 import com.dremio.exec.ops.QueryContext;
 import com.dremio.exec.planner.sql.handlers.direct.SimpleCommandResult;
 import com.dremio.exec.planner.sql.handlers.direct.SimpleDirectHandler;
+import com.dremio.exec.planner.sql.parser.SqlGrant;
 import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
-import com.dremio.exec.planner.sql.parser.SqlRevoke;
 import com.dremio.service.acl.AuthorizationService;
 import com.dremio.service.acl.exception.AclException;
 import com.dremio.service.acl.proto.GranteeType;
@@ -33,29 +34,29 @@ import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 
 /**
- * Handler for SQL REVOKE command.
+ * Handler for SQL GRANT command.
  *
- * <p>Syntax: REVOKE privilege ON resource FROM USER/ROLE grantee
+ * <p>Syntax: GRANT privilege ON resource TO USER/ROLE grantee
  *
- * <p>This handler is dynamically loaded by SqlRevoke via reflection.
+ * <p>This handler is dynamically loaded by SqlGrant via reflection.
  */
-public class RevokeHandler extends SimpleDirectHandler {
+public class GrantHandler extends SimpleDirectHandler {
 
   private final QueryContext context;
 
-  public RevokeHandler(QueryContext context) {
+  public GrantHandler(QueryContext context) {
     this.context = context;
   }
 
   @Override
   public List<SimpleCommandResult> toResult(String sql, SqlNode sqlNode) throws Exception {
-    if (!(sqlNode instanceof SqlRevoke)) {
+    if (!(sqlNode instanceof SqlGrant)) {
       throw UserException.validationError()
-          .message("Invalid SQL node type for RevokeHandler")
+          .message("Invalid SQL node type for GrantHandler")
           .buildSilently();
     }
 
-    SqlRevoke revoke = (SqlRevoke) sqlNode;
+    SqlGrant grant = (SqlGrant) sqlNode;
 
     // Get ACL service from context
     AuthorizationService aclService = getAclService();
@@ -66,32 +67,34 @@ public class RevokeHandler extends SimpleDirectHandler {
           .buildSilently();
     }
 
-    // Extract revoke parameters
+    // Extract grant parameters
     String currentUser = context.getQueryUserName();
-    GranteeType granteeType = convertGranteeType(revoke.getGranteeType());
-    String granteeName = getGranteeName(revoke.getGrantee());
-    NamespaceKey resourcePath = getResourcePath(revoke);
-    List<Privilege> privileges = getPrivileges(revoke);
+    GranteeType granteeType = convertGranteeType(grant.getGranteeType());
+    String granteeName = getGranteeName(grant.getGrantee());
+    NamespaceKey resourcePath = getResourcePath(grant);
+    List<Privilege> privileges = getPrivileges(grant);
+    boolean withGrantOption = false; // Phase 1 MVP: always false
 
-    // Execute revoke for each privilege
+    // Execute grant for each privilege
     for (Privilege privilege : privileges) {
       try {
-        aclService.revokePrivilege(
+        aclService.grantPrivilege(
             granteeType,
             granteeName,
             resourcePath,
             privilege,
-            currentUser
+            currentUser,
+            withGrantOption
         );
       } catch (AclException e) {
         throw UserException.validationError(e)
-            .message("Failed to revoke privilege: %s", e.getMessage())
+            .message("Failed to grant privilege: %s", e.getMessage())
             .buildSilently();
       }
     }
 
     String message = String.format(
-        "Revoked %s on %s from %s %s",
+        "Granted %s on %s to %s %s",
         privileges,
         resourcePath,
         granteeType.name(),
@@ -102,15 +105,24 @@ public class RevokeHandler extends SimpleDirectHandler {
   }
 
   private AuthorizationService getAclService() {
-    // Placeholder - will be properly implemented during DACDaemonModule integration
+    // TODO: Add getAuthorizationService() method to QueryContext
+    // For now, this will throw an error until QueryContext is updated to provide the service
+    //
+    // Required changes:
+    // 1. Add AuthorizationService field to QueryContext
+    // 2. Add getAuthorizationService() method to QueryContext
+    // 3. Inject AuthorizationService in QueryContext constructor
+    //
+    // Alternative: Use ServiceRegistry or ServiceResolver pattern
     throw UserException.unsupportedError()
-        .message("ACL service integration not yet complete. Please complete DACDaemonModule integration.")
+        .message("GRANT command requires ACL service integration. " +
+                 "Add AuthorizationService to QueryContext to enable this feature.")
         .buildSilently();
   }
 
   private GranteeType convertGranteeType(SqlLiteral granteeTypeLiteral) {
-    SqlRevoke.GranteeType sqlGranteeType =
-        (SqlRevoke.GranteeType) granteeTypeLiteral.getValue();
+    SqlGrant.GranteeType sqlGranteeType =
+        (SqlGrant.GranteeType) granteeTypeLiteral.getValue();
 
     switch (sqlGranteeType) {
       case USER:
@@ -125,21 +137,29 @@ public class RevokeHandler extends SimpleDirectHandler {
   }
 
   private String getGranteeName(SqlIdentifier grantee) {
+    // Grantee can be a simple name or qualified
     return grantee.getSimple();
   }
 
-  private NamespaceKey getResourcePath(SqlRevoke revoke) {
-    // Simplified version - needs proper parsing
-    SqlLiteral grantTypeLiteral = revoke.getGrantType();
+  private NamespaceKey getResourcePath(SqlGrant grant) {
+    // For Phase 1 MVP, we need to extract the resource path from the grant
+    // The resource is embedded in the SQL context
+    // For now, parse from the grantType which contains the resource path
+
+    // This is a simplified version - full implementation needs proper parsing
+    SqlLiteral grantTypeLiteral = grant.getGrantType();
     String grantTypeStr = grantTypeLiteral.toValue();
+
+    // Parse the resource path (e.g., "source.folder.table" -> ["source", "folder", "table"])
     List<String> pathComponents = Arrays.asList(grantTypeStr.split("\\."));
+
     return new NamespaceKey(pathComponents);
   }
 
-  private List<Privilege> getPrivileges(SqlRevoke revoke) {
+  private List<Privilege> getPrivileges(SqlGrant grant) {
     List<Privilege> privileges = new java.util.ArrayList<>();
 
-    for (SqlNode node : revoke.getPrivilegeList().getList()) {
+    for (SqlNode node : grant.getPrivilegeList().getList()) {
       if (node instanceof SqlLiteral) {
         SqlLiteral privilegeLiteral = (SqlLiteral) node;
         Privilege privilege = (Privilege) privilegeLiteral.getValue();
@@ -149,7 +169,7 @@ public class RevokeHandler extends SimpleDirectHandler {
 
     if (privileges.isEmpty()) {
       throw UserException.validationError()
-          .message("No privileges specified in REVOKE statement")
+          .message("No privileges specified in GRANT statement")
           .buildSilently();
     }
 
