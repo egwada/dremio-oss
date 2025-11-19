@@ -17,11 +17,9 @@ package com.dremio.service.acl.store;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.dremio.datastore.api.DocumentWriter;
@@ -35,9 +33,7 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Unit tests for PrivilegeGrantConverter.
- */
+/** Unit tests for PrivilegeGrantConverter. */
 public class PrivilegeGrantConverterTest {
 
   private PrivilegeGrantConverter converter;
@@ -106,7 +102,8 @@ public class PrivilegeGrantConverterTest {
     grant.setGranteeName("admin_role");
     grant.setResourceType(ResourceType.FOLDER);
     grant.setResourcePathList(Arrays.asList("myspace"));
-    grant.setPrivilegesList(ImmutableList.of(PrivilegeType.SELECT, PrivilegeType.INSERT, PrivilegeType.UPDATE));
+    grant.setPrivilegesList(
+        ImmutableList.of(PrivilegeType.SELECT, PrivilegeType.INSERT, PrivilegeType.UPDATE));
     grant.setGrantedBy("superadmin");
     grant.setGrantedAt(System.currentTimeMillis());
     grant.setWithGrantOption(true);

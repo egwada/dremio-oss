@@ -21,9 +21,7 @@ import static org.mockito.Mockito.mock;
 import com.dremio.service.acl.store.PrivilegeStore;
 import org.junit.Test;
 
-/**
- * Unit tests for PermissionEvaluator.
- */
+/** Unit tests for PermissionEvaluator. */
 public class PermissionEvaluatorTest {
 
   @Test

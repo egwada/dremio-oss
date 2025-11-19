@@ -38,9 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-/**
- * Unit tests for PrivilegeStore.
- */
+/** Unit tests for PrivilegeStore. */
 public class PrivilegeStoreTest {
 
   private LegacyKVStoreProvider mockKvStoreProvider;
