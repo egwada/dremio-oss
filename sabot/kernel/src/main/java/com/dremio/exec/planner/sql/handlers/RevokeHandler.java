@@ -19,6 +19,7 @@ import com.dremio.common.exceptions.UserException;
 import com.dremio.exec.ops.QueryContext;
 import com.dremio.exec.planner.sql.handlers.direct.SimpleCommandResult;
 import com.dremio.exec.planner.sql.handlers.direct.SimpleDirectHandler;
+import com.dremio.exec.planner.sql.parser.SqlGrant;
 import com.dremio.exec.planner.sql.parser.SqlGrant.Privilege;
 import com.dremio.exec.planner.sql.parser.SqlRevoke;
 import com.dremio.service.acl.AuthorizationService;
@@ -114,8 +115,8 @@ public class RevokeHandler extends SimpleDirectHandler {
   }
 
   private GranteeType convertGranteeType(SqlLiteral granteeTypeLiteral) {
-    SqlRevoke.GranteeType sqlGranteeType =
-        (SqlRevoke.GranteeType) granteeTypeLiteral.getValue();
+    SqlGrant.GranteeType sqlGranteeType =
+        (SqlGrant.GranteeType) granteeTypeLiteral.getValue();
 
     switch (sqlGranteeType) {
       case USER:
