@@ -819,9 +819,12 @@ public class CatalogServiceImpl implements CatalogService {
   public Catalog getCatalog(MetadataRequestOptions requestOptions) {
     Preconditions.checkNotNull(requestOptions, "request options are required");
 
-    final Catalog decoratedCatalog =
-        SourceAccessChecker.secureIfNeeded(requestOptions, createCatalog(requestOptions));
-    return new CachingCatalog(decoratedCatalog);
+    Catalog catalog = createCatalog(requestOptions);
+    catalog = SourceAccessChecker.secureIfNeeded(requestOptions, catalog);
+    catalog =
+        AclCatalog.wrapIfNeeded(
+            requestOptions, catalog, sabotContext.get().getAuthorizationService());
+    return new CachingCatalog(catalog);
   }
 
   protected Catalog createCatalog(MetadataRequestOptions requestOptions) {
