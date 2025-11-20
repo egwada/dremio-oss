@@ -145,6 +145,7 @@ public class SabotContext implements AutoCloseable, SabotQueryContext {
   private final Provider<SecretsCreator> secretsCreator;
   private final Provider<ForemenWorkManager> foremenWorkManagerProvider;
   private final Provider<MetadataIOPool> metadataIOPoolProvider;
+  private final Provider<com.dremio.service.acl.AuthorizationService> authorizationServiceProvider;
 
   private final NodeDebugContextProvider nodeDebugContext;
 
@@ -213,7 +214,8 @@ public class SabotContext implements AutoCloseable, SabotQueryContext {
       Provider<SourceVerifier> sourceVerifierProvider,
       Provider<SecretsCreator> secretsCreatorProvider,
       Provider<ForemenWorkManager> foremenWorkManagerProvider,
-      Provider<MetadataIOPool> metadataIOPoolProvider) {
+      Provider<MetadataIOPool> metadataIOPoolProvider,
+      Provider<com.dremio.service.acl.AuthorizationService> authorizationServiceProvider) {
     this.dremioConfig = dremioConfig;
     this.config = config;
     this.roles = ImmutableSet.copyOf(roles);
@@ -227,6 +229,7 @@ public class SabotContext implements AutoCloseable, SabotQueryContext {
     this.accelerationListManager = accelerationListManager;
     this.foremenWorkManagerProvider = foremenWorkManagerProvider;
     this.metadataIOPoolProvider = metadataIOPoolProvider;
+    this.authorizationServiceProvider = authorizationServiceProvider;
     this.planReader = physicalPlanReader;
     this.optionManager = optionManager;
     this.functionRegistry = functionImplementationRegistry;
@@ -407,6 +410,11 @@ public class SabotContext implements AutoCloseable, SabotQueryContext {
 
   public CodeCompiler getCompiler() {
     return compiler;
+  }
+
+  @Override
+  public com.dremio.service.acl.AuthorizationService getAuthorizationService() {
+    return authorizationServiceProvider != null ? authorizationServiceProvider.get() : null;
   }
 
   @Override

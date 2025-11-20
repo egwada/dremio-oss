@@ -133,6 +133,7 @@ public class ContextService implements Service, Provider<SabotContext> {
   private final Provider<SecretsCreator> secretsCreatorProvider;
   private final Provider<ForemenWorkManager> foremenWorkManagerProvider;
   private final Provider<MetadataIOPool> metadataIOPoolProvider;
+  private final Provider<com.dremio.service.acl.AuthorizationService> authorizationServiceProvider;
 
   private SabotContext context;
 
@@ -181,7 +182,8 @@ public class ContextService implements Service, Provider<SabotContext> {
       Provider<SourceVerifier> sourceVerifierProvider,
       Provider<SecretsCreator> secretsCreatorProvider,
       Provider<ForemenWorkManager> foremenWorkManagerProvider,
-      Provider<MetadataIOPool> metadataIOPoolProvider) {
+      Provider<MetadataIOPool> metadataIOPoolProvider,
+      Provider<com.dremio.service.acl.AuthorizationService> authorizationServiceProvider) {
     this.bootstrapContext = bootstrapContext;
     this.workStats = workStats;
     this.kvStoreProvider = kvStoreProvider;
@@ -227,6 +229,7 @@ public class ContextService implements Service, Provider<SabotContext> {
     this.secretsCreatorProvider = secretsCreatorProvider;
     this.foremenWorkManagerProvider = foremenWorkManagerProvider;
     this.metadataIOPoolProvider = metadataIOPoolProvider;
+    this.authorizationServiceProvider = authorizationServiceProvider;
   }
 
   @Override
@@ -372,7 +375,8 @@ public class ContextService implements Service, Provider<SabotContext> {
         sourceVerifierProvider,
         secretsCreatorProvider,
         foremenWorkManagerProvider,
-        metadataIOPoolProvider);
+        metadataIOPoolProvider,
+        authorizationServiceProvider);
   }
 
   @Override

@@ -800,7 +800,8 @@ public class DACDaemonModule implements DACModule {
             registry.provider(SourceVerifier.class),
             registry.provider(SecretsCreator.class),
             registry.provider(ForemenWorkManager.class),
-            registry.provider(MetadataIOPool.class));
+            registry.provider(MetadataIOPool.class),
+            registry.provider(com.dremio.service.acl.AuthorizationService.class));
 
     registry.bind(SysFlightChannelProvider.class, SysFlightChannelProvider.NO_OP);
 
