@@ -16,7 +16,6 @@
 package com.dremio.exec.planner.sql.handlers;
 
 import com.dremio.common.exceptions.UserException;
-import com.dremio.exec.catalog.Catalog;
 import com.dremio.exec.ops.QueryContext;
 import com.dremio.exec.planner.sql.handlers.direct.SimpleCommandResult;
 import com.dremio.exec.planner.sql.handlers.direct.SimpleDirectHandler;
@@ -62,9 +61,7 @@ public class GrantHandler extends SimpleDirectHandler {
     AuthorizationService aclService = getAclService();
 
     if (!aclService.isEnabled()) {
-      throw UserException.unsupportedError()
-          .message("ACL service is not enabled")
-          .buildSilently();
+      throw UserException.unsupportedError().message("ACL service is not enabled").buildSilently();
     }
 
     // Extract grant parameters
@@ -84,8 +81,7 @@ public class GrantHandler extends SimpleDirectHandler {
             resourcePath,
             toAclPrivilege(privilege),
             currentUser,
-            withGrantOption
-        );
+            withGrantOption);
       } catch (AclException e) {
         throw UserException.validationError(e)
             .message("Failed to grant privilege: %s", e.getMessage())
@@ -93,13 +89,9 @@ public class GrantHandler extends SimpleDirectHandler {
       }
     }
 
-    String message = String.format(
-        "Granted %s on %s to %s %s",
-        privileges,
-        resourcePath,
-        granteeType.name(),
-        granteeName
-    );
+    String message =
+        String.format(
+            "Granted %s on %s to %s %s", privileges, resourcePath, granteeType.name(), granteeName);
 
     return Collections.singletonList(SimpleCommandResult.successful(message));
   }
@@ -108,17 +100,17 @@ public class GrantHandler extends SimpleDirectHandler {
     AuthorizationService service = context.getAuthorizationService();
     if (service == null) {
       throw UserException.unsupportedError()
-          .message("ACL service is not available. " +
-                   "The AuthorizationService must be registered in SabotContext to enable GRANT commands. " +
-                   "See services/acl/INTEGRATION_GUIDE.md for setup instructions.")
+          .message(
+              "ACL service is not available. "
+                  + "The AuthorizationService must be registered in SabotContext to enable GRANT commands. "
+                  + "See services/acl/INTEGRATION_GUIDE.md for setup instructions.")
           .buildSilently();
     }
     return service;
   }
 
   private GranteeType convertGranteeType(SqlLiteral granteeTypeLiteral) {
-    SqlGrant.GranteeType sqlGranteeType =
-        (SqlGrant.GranteeType) granteeTypeLiteral.getValue();
+    SqlGrant.GranteeType sqlGranteeType = (SqlGrant.GranteeType) granteeTypeLiteral.getValue();
 
     switch (sqlGranteeType) {
       case USER:
@@ -173,8 +165,8 @@ public class GrantHandler extends SimpleDirectHandler {
   }
 
   /**
-   * Converts SQL parser Privilege enum to ACL service Privilege enum.
-   * This conversion is necessary to avoid circular dependency between sabot/kernel and services/acl.
+   * Converts SQL parser Privilege enum to ACL service Privilege enum. This conversion is necessary
+   * to avoid circular dependency between sabot/kernel and services/acl.
    */
   private com.dremio.service.acl.Privilege toAclPrivilege(Privilege sqlPrivilege) {
     return com.dremio.service.acl.Privilege.valueOf(sqlPrivilege.name());

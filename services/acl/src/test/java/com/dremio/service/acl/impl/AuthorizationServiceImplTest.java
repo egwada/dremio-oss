@@ -15,34 +15,18 @@
  */
 package com.dremio.service.acl.impl;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.dremio.common.config.SabotConfig;
 import com.dremio.datastore.api.LegacyKVStoreProvider;
-import com.dremio.service.acl.Privilege;
-import com.dremio.service.acl.proto.GranteeType;
-import com.dremio.service.acl.proto.PrivilegeGrant;
-import com.dremio.service.acl.proto.PrivilegeType;
-import com.dremio.service.acl.store.PrivilegeStore;
-import com.dremio.service.namespace.NamespaceKey;
-import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
 import javax.inject.Provider;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
-/**
- * Unit tests for AuthorizationServiceImpl.
- */
+/** Unit tests for AuthorizationServiceImpl. */
 public class AuthorizationServiceImplTest {
 
   private LegacyKVStoreProvider mockKVStoreProvider;

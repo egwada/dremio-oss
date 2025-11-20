@@ -105,8 +105,8 @@ public interface SabotQueryContext {
   QueryContextCreator getQueryContextCreator();
 
   /**
-   * Returns the AuthorizationService for ACL (Access Control List) operations.
-   * This service is optional and may return null if ACL functionality is not enabled.
+   * Returns the AuthorizationService for ACL (Access Control List) operations. This service is
+   * optional and may return null if ACL functionality is not enabled.
    *
    * @return AuthorizationService instance, or null if not available
    */

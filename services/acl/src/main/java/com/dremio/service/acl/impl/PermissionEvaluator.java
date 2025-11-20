@@ -26,10 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Évalue les permissions en combinant :
- * - Privilèges directs du user
- * - Privilèges des rôles du user (Phase 2)
- * - Héritage hiérarchique (Phase 2)
+ * Évalue les permissions en combinant : - Privilèges directs du user - Privilèges des rôles du user
+ * (Phase 2) - Héritage hiérarchique (Phase 2)
  *
  * <p>Phase 1 MVP : Uniquement privilèges directs USER
  */
@@ -55,8 +53,11 @@ public class PermissionEvaluator {
     Preconditions.checkNotNull(resourcePath, "resourcePath is required");
     Preconditions.checkNotNull(privilege, "privilege is required");
 
-    logger.debug("Evaluating permission: user={}, resource={}, privilege={}",
-        username, resourcePath, privilege);
+    logger.debug(
+        "Evaluating permission: user={}, resource={}, privilege={}",
+        username,
+        resourcePath,
+        privilege);
 
     // Phase 1 MVP: Check direct USER privileges only
     if (hasDirectPrivilege(username, resourcePath, privilege)) {
@@ -82,7 +83,8 @@ public class PermissionEvaluator {
    * @param privilege Privilège requis
    * @return true si le privilège existe
    */
-  private boolean hasDirectPrivilege(String granteeName, NamespaceKey resourcePath, Privilege privilege) {
+  private boolean hasDirectPrivilege(
+      String granteeName, NamespaceKey resourcePath, Privilege privilege) {
     // Rechercher le grant dans le store
     PrivilegeGrant grant = privilegeStore.findGrant(GranteeType.USER, granteeName, resourcePath);
 
@@ -105,8 +107,9 @@ public class PermissionEvaluator {
       }
 
       // MODIFY includes ALTER, DROP
-      if (grantedPrivilege == PrivilegeType.MODIFY &&
-          (requestedPrivilege == PrivilegeType.ALTER || requestedPrivilege == PrivilegeType.DROP)) {
+      if (grantedPrivilege == PrivilegeType.MODIFY
+          && (requestedPrivilege == PrivilegeType.ALTER
+              || requestedPrivilege == PrivilegeType.DROP)) {
         return true;
       }
     }
@@ -114,9 +117,7 @@ public class PermissionEvaluator {
     return false;
   }
 
-  /**
-   * Convert SqlGrant.Privilege to PrivilegeType proto enum.
-   */
+  /** Convert SqlGrant.Privilege to PrivilegeType proto enum. */
   private PrivilegeType convertToPrivilegeType(Privilege privilege) {
     switch (privilege) {
       case SELECT:

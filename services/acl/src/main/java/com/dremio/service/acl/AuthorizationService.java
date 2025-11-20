@@ -15,7 +15,6 @@
  */
 package com.dremio.service.acl;
 
-import com.dremio.common.AutoCloseables;
 import com.dremio.service.Service;
 import com.dremio.service.acl.exception.AclException;
 import com.dremio.service.acl.proto.GranteeType;
@@ -25,10 +24,8 @@ import com.dremio.service.namespace.NamespaceKey;
 /**
  * Service de gestion des autorisations (ACL).
  *
- * <p>Ce service est le point d'entrée pour toutes les opérations ACL :
- * - Vérification de permissions
- * - Grant/Revoke de privilèges
- * - Gestion des rôles (Phase 2)
+ * <p>Ce service est le point d'entrée pour toutes les opérations ACL : - Vérification de
+ * permissions - Grant/Revoke de privilèges - Gestion des rôles (Phase 2)
  *
  * <p>Phase 1 MVP : Support uniquement USER (pas de ROLE)
  */
@@ -75,8 +72,8 @@ public interface AuthorizationService extends Service {
       NamespaceKey resourcePath,
       Privilege privilege,
       String grantedBy,
-      boolean withGrantOption
-  ) throws AclException;
+      boolean withGrantOption)
+      throws AclException;
 
   /**
    * Révoque un privilège.
@@ -93,8 +90,8 @@ public interface AuthorizationService extends Service {
       String granteeName,
       NamespaceKey resourcePath,
       Privilege privilege,
-      String revokedBy
-  ) throws AclException;
+      String revokedBy)
+      throws AclException;
 
   /**
    * Liste tous les privilèges d'un user/role.
@@ -115,9 +112,7 @@ public interface AuthorizationService extends Service {
 
   // === Cache Management ===
 
-  /**
-   * Vide le cache de permissions (après modification des grants).
-   */
+  /** Vide le cache de permissions (après modification des grants). */
   void clearPermissionCache();
 
   /**

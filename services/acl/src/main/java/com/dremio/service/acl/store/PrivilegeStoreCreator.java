@@ -16,7 +16,6 @@
 package com.dremio.service.acl.store;
 
 import com.dremio.datastore.api.LegacyIndexedStore;
-import com.dremio.datastore.api.LegacyIndexedStore.LegacyFindByCondition;
 import com.dremio.datastore.api.LegacyIndexedStoreCreationFunction;
 import com.dremio.datastore.api.LegacyStoreBuildingFactory;
 import com.dremio.datastore.format.Format;
@@ -25,9 +24,8 @@ import com.dremio.service.acl.proto.PrivilegeGrant;
 /**
  * PrivilegeStore creator.
  *
- * <p>Ce store contient tous les grants de privilèges.
- * Clé: grant_id (UUID)
- * Valeur: PrivilegeGrant protobuf
+ * <p>Ce store contient tous les grants de privilèges. Clé: grant_id (UUID) Valeur: PrivilegeGrant
+ * protobuf
  */
 public final class PrivilegeStoreCreator
     implements LegacyIndexedStoreCreationFunction<String, PrivilegeGrant> {
@@ -35,7 +33,8 @@ public final class PrivilegeStoreCreator
   public static final String PRIVILEGE_STORE_NAME = "acl_privileges";
 
   @Override
-  public LegacyIndexedStore<String, PrivilegeGrant> build(final LegacyStoreBuildingFactory factory) {
+  public LegacyIndexedStore<String, PrivilegeGrant> build(
+      final LegacyStoreBuildingFactory factory) {
     return factory
         .<String, PrivilegeGrant>newStore()
         .name(PRIVILEGE_STORE_NAME)

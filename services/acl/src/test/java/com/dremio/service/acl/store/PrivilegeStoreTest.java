@@ -51,8 +51,7 @@ public class PrivilegeStoreTest {
     mockKvStoreProvider = mock(LegacyKVStoreProvider.class);
     mockIndexedStore = mock(LegacyIndexedStore.class);
 
-    when(mockKvStoreProvider.getStore(PrivilegeStoreCreator.class))
-        .thenReturn(mockIndexedStore);
+    when(mockKvStoreProvider.getStore(PrivilegeStoreCreator.class)).thenReturn(mockIndexedStore);
 
     privilegeStore = new PrivilegeStore(mockKvStoreProvider);
   }

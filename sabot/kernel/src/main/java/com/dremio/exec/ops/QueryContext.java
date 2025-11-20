@@ -589,9 +589,9 @@ public class QueryContext
   }
 
   /**
-   * Returns the AuthorizationService for ACL (Access Control List) operations.
-   * This service is optional and may return null if ACL functionality is not enabled
-   * or not available in the current deployment.
+   * Returns the AuthorizationService for ACL (Access Control List) operations. This service is
+   * optional and may return null if ACL functionality is not enabled or not available in the
+   * current deployment.
    *
    * @return AuthorizationService instance, or null if not available
    */

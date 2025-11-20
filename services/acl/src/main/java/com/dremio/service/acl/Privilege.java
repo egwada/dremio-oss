@@ -18,8 +18,8 @@ package com.dremio.service.acl;
 /**
  * SQL privileges that can be granted or revoked.
  *
- * <p>This enum mirrors com.dremio.exec.planner.sql.parser.SqlGrant.Privilege but is defined here
- * to avoid circular dependency with sabot/kernel.
+ * <p>This enum mirrors com.dremio.exec.planner.sql.parser.SqlGrant.Privilege but is defined here to
+ * avoid circular dependency with sabot/kernel.
  */
 public enum Privilege {
   /** Privilege to read data. */

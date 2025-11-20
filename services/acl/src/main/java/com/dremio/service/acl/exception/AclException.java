@@ -15,9 +15,7 @@
  */
 package com.dremio.service.acl.exception;
 
-/**
- * Base exception for ACL service errors.
- */
+/** Base exception for ACL service errors. */
 public class AclException extends Exception {
 
   public AclException(String message) {

@@ -18,25 +18,22 @@ package com.dremio.service.acl.store;
 import com.dremio.datastore.api.DocumentConverter;
 import com.dremio.datastore.api.DocumentWriter;
 import com.dremio.datastore.indexed.IndexKey;
-import com.dremio.service.acl.proto.GranteeType;
 import com.dremio.service.acl.proto.PrivilegeGrant;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-/**
- * Document converter for PrivilegeGrant to enable indexing.
- */
+/** Document converter for PrivilegeGrant to enable indexing. */
 public class PrivilegeGrantConverter implements DocumentConverter<String, PrivilegeGrant> {
 
   // Index keys for efficient search
-  public static final IndexKey GRANTEE_NAME = IndexKey.newBuilder("grantee_name", "GRANTEE_NAME", String.class)
-      .build();
+  public static final IndexKey GRANTEE_NAME =
+      IndexKey.newBuilder("grantee_name", "GRANTEE_NAME", String.class).build();
 
-  public static final IndexKey GRANTEE_TYPE = IndexKey.newBuilder("grantee_type", "GRANTEE_TYPE", String.class)
-      .build();
+  public static final IndexKey GRANTEE_TYPE =
+      IndexKey.newBuilder("grantee_type", "GRANTEE_TYPE", String.class).build();
 
-  public static final IndexKey RESOURCE_PATH = IndexKey.newBuilder("resource_path", "RESOURCE_PATH", String.class)
-      .build();
+  public static final IndexKey RESOURCE_PATH =
+      IndexKey.newBuilder("resource_path", "RESOURCE_PATH", String.class).build();
 
   private static final Joiner PATH_JOINER = Joiner.on(".");
 

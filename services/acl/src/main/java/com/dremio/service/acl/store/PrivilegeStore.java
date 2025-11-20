@@ -17,7 +17,6 @@ package com.dremio.service.acl.store;
 
 import com.dremio.datastore.SearchQueryUtils;
 import com.dremio.datastore.SearchTypes.SearchQuery;
-import com.dremio.datastore.api.Document;
 import com.dremio.datastore.api.LegacyIndexedStore;
 import com.dremio.datastore.api.LegacyIndexedStore.LegacyFindByCondition;
 import com.dremio.datastore.api.LegacyKVStoreProvider;
@@ -45,7 +44,9 @@ public class PrivilegeStore {
 
   public PrivilegeStore(LegacyKVStoreProvider kvStoreProvider) {
     Preconditions.checkNotNull(kvStoreProvider, "kvStoreProvider is required");
-    this.store = (LegacyIndexedStore<String, PrivilegeGrant>) kvStoreProvider.getStore(PrivilegeStoreCreator.class);
+    this.store =
+        (LegacyIndexedStore<String, PrivilegeGrant>)
+            kvStoreProvider.getStore(PrivilegeStoreCreator.class);
   }
 
   /**
@@ -102,16 +103,15 @@ public class PrivilegeStore {
    */
   public Iterable<PrivilegeGrant> findByGrantee(GranteeType granteeType, String granteeName) {
     // Build search query using SearchQueryUtils
-    SearchQuery granteeNameQuery = SearchQueryUtils.newTermQuery(
-        PrivilegeGrantConverter.GRANTEE_NAME, granteeName);
+    SearchQuery granteeNameQuery =
+        SearchQueryUtils.newTermQuery(PrivilegeGrantConverter.GRANTEE_NAME, granteeName);
 
-    SearchQuery granteeTypeQuery = SearchQueryUtils.newTermQuery(
-        PrivilegeGrantConverter.GRANTEE_TYPE, granteeType.name());
+    SearchQuery granteeTypeQuery =
+        SearchQueryUtils.newTermQuery(PrivilegeGrantConverter.GRANTEE_TYPE, granteeType.name());
 
     SearchQuery combinedQuery = SearchQueryUtils.and(granteeNameQuery, granteeTypeQuery);
 
-    LegacyFindByCondition condition = new LegacyFindByCondition()
-        .setCondition(combinedQuery);
+    LegacyFindByCondition condition = new LegacyFindByCondition().setCondition(combinedQuery);
 
     return toGrantList(store.find(condition));
   }
@@ -125,11 +125,10 @@ public class PrivilegeStore {
   public Iterable<PrivilegeGrant> findByResource(NamespaceKey resourcePath) {
     String resourcePathStr = PATH_JOINER.join(resourcePath.getPathComponents());
 
-    SearchQuery query = SearchQueryUtils.newTermQuery(
-        PrivilegeGrantConverter.RESOURCE_PATH, resourcePathStr);
+    SearchQuery query =
+        SearchQueryUtils.newTermQuery(PrivilegeGrantConverter.RESOURCE_PATH, resourcePathStr);
 
-    LegacyFindByCondition condition = new LegacyFindByCondition()
-        .setCondition(query);
+    LegacyFindByCondition condition = new LegacyFindByCondition().setCondition(query);
 
     return toGrantList(store.find(condition));
   }
@@ -142,22 +141,23 @@ public class PrivilegeStore {
    * @param resourcePath The resource path
    * @return The matching grant, or null if not found
    */
-  public PrivilegeGrant findGrant(GranteeType granteeType, String granteeName, NamespaceKey resourcePath) {
+  public PrivilegeGrant findGrant(
+      GranteeType granteeType, String granteeName, NamespaceKey resourcePath) {
     String resourcePathStr = PATH_JOINER.join(resourcePath.getPathComponents());
 
-    SearchQuery granteeNameQuery = SearchQueryUtils.newTermQuery(
-        PrivilegeGrantConverter.GRANTEE_NAME, granteeName);
+    SearchQuery granteeNameQuery =
+        SearchQueryUtils.newTermQuery(PrivilegeGrantConverter.GRANTEE_NAME, granteeName);
 
-    SearchQuery granteeTypeQuery = SearchQueryUtils.newTermQuery(
-        PrivilegeGrantConverter.GRANTEE_TYPE, granteeType.name());
+    SearchQuery granteeTypeQuery =
+        SearchQueryUtils.newTermQuery(PrivilegeGrantConverter.GRANTEE_TYPE, granteeType.name());
 
-    SearchQuery resourceQuery = SearchQueryUtils.newTermQuery(
-        PrivilegeGrantConverter.RESOURCE_PATH, resourcePathStr);
+    SearchQuery resourceQuery =
+        SearchQueryUtils.newTermQuery(PrivilegeGrantConverter.RESOURCE_PATH, resourcePathStr);
 
-    SearchQuery combinedQuery = SearchQueryUtils.and(granteeNameQuery, granteeTypeQuery, resourceQuery);
+    SearchQuery combinedQuery =
+        SearchQueryUtils.and(granteeNameQuery, granteeTypeQuery, resourceQuery);
 
-    LegacyFindByCondition condition = new LegacyFindByCondition()
-        .setCondition(combinedQuery);
+    LegacyFindByCondition condition = new LegacyFindByCondition().setCondition(combinedQuery);
 
     Iterable<PrivilegeGrant> results = toGrantList(store.find(condition));
     return Iterables.getFirst(results, null);
@@ -172,9 +172,7 @@ public class PrivilegeStore {
     return toGrantList(store.find());
   }
 
-  /**
-   * Convert Document entries to PrivilegeGrant list.
-   */
+  /** Convert Document entries to PrivilegeGrant list. */
   private Iterable<PrivilegeGrant> toGrantList(Iterable<Entry<String, PrivilegeGrant>> entries) {
     List<PrivilegeGrant> grants = new ArrayList<>();
     for (Entry<String, PrivilegeGrant> entry : entries) {

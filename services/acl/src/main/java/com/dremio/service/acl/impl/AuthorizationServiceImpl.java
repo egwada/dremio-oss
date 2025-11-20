@@ -69,8 +69,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
   private List<String> superAdmins;
 
   public AuthorizationServiceImpl(
-      Provider<LegacyKVStoreProvider> kvStoreProviderProvider,
-      SabotConfig config) {
+      Provider<LegacyKVStoreProvider> kvStoreProviderProvider, SabotConfig config) {
     this.kvStoreProviderProvider = Preconditions.checkNotNull(kvStoreProviderProvider);
     this.config = Preconditions.checkNotNull(config);
   }
@@ -122,45 +121,57 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
   private void loadConfiguration() {
     // Load from SabotConfig or use defaults
-    this.enabled = config.hasPath(CONFIG_PREFIX + ".enabled")
-        ? config.getBoolean(CONFIG_PREFIX + ".enabled")
-        : true;
+    this.enabled =
+        config.hasPath(CONFIG_PREFIX + ".enabled")
+            ? config.getBoolean(CONFIG_PREFIX + ".enabled")
+            : true;
 
-    String mode = config.hasPath(CONFIG_PREFIX + ".mode")
-        ? config.getString(CONFIG_PREFIX + ".mode")
-        : "strict";
+    String mode =
+        config.hasPath(CONFIG_PREFIX + ".mode")
+            ? config.getString(CONFIG_PREFIX + ".mode")
+            : "strict";
     this.strictMode = "strict".equalsIgnoreCase(mode);
 
     // Load public sources (accessible without grant)
-    this.publicSources = config.hasPath(CONFIG_PREFIX + ".defaults.public_sources")
-        ? config.getStringList(CONFIG_PREFIX + ".defaults.public_sources")
-        : Arrays.asList("samples", "sys");
+    this.publicSources =
+        config.hasPath(CONFIG_PREFIX + ".defaults.public_sources")
+            ? config.getStringList(CONFIG_PREFIX + ".defaults.public_sources")
+            : Arrays.asList("samples", "sys");
 
     // Load super admins (bypass all checks)
-    this.superAdmins = config.hasPath(CONFIG_PREFIX + ".defaults.super_admins")
-        ? config.getStringList(CONFIG_PREFIX + ".defaults.super_admins")
-        : Arrays.asList("admin");
+    this.superAdmins =
+        config.hasPath(CONFIG_PREFIX + ".defaults.super_admins")
+            ? config.getStringList(CONFIG_PREFIX + ".defaults.super_admins")
+            : Arrays.asList("admin");
 
-    logger.info("ACL Configuration: enabled={}, strictMode={}, publicSources={}, superAdmins={}",
-        enabled, strictMode, publicSources, superAdmins);
+    logger.info(
+        "ACL Configuration: enabled={}, strictMode={}, publicSources={}, superAdmins={}",
+        enabled,
+        strictMode,
+        publicSources,
+        superAdmins);
   }
 
   private void initializeCache() {
-    long ttlMillis = config.hasPath(CONFIG_PREFIX + ".cache.ttl")
-        ? config.getLong(CONFIG_PREFIX + ".cache.ttl")
-        : 300000; // 5 minutes default
+    long ttlMillis =
+        config.hasPath(CONFIG_PREFIX + ".cache.ttl")
+            ? config.getLong(CONFIG_PREFIX + ".cache.ttl")
+            : 300000; // 5 minutes default
 
-    int maxSize = config.hasPath(CONFIG_PREFIX + ".cache.max_size")
-        ? config.getInt(CONFIG_PREFIX + ".cache.max_size")
-        : 10000;
+    int maxSize =
+        config.hasPath(CONFIG_PREFIX + ".cache.max_size")
+            ? config.getInt(CONFIG_PREFIX + ".cache.max_size")
+            : 10000;
 
-    boolean recordStats = config.hasPath(CONFIG_PREFIX + ".cache.record_stats")
-        ? config.getBoolean(CONFIG_PREFIX + ".cache.record_stats")
-        : true;
+    boolean recordStats =
+        config.hasPath(CONFIG_PREFIX + ".cache.record_stats")
+            ? config.getBoolean(CONFIG_PREFIX + ".cache.record_stats")
+            : true;
 
-    Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder()
-        .maximumSize(maxSize)
-        .expireAfterWrite(ttlMillis, TimeUnit.MILLISECONDS);
+    Caffeine<Object, Object> cacheBuilder =
+        Caffeine.newBuilder()
+            .maximumSize(maxSize)
+            .expireAfterWrite(ttlMillis, TimeUnit.MILLISECONDS);
 
     if (recordStats) {
       cacheBuilder.recordStats();
@@ -168,8 +179,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     this.permissionCache = cacheBuilder.build();
 
-    logger.info("Permission cache initialized (ttl={}ms, maxSize={}, recordStats={})",
-        ttlMillis, maxSize, recordStats);
+    logger.info(
+        "Permission cache initialized (ttl={}ms, maxSize={}, recordStats={})",
+        ttlMillis,
+        maxSize,
+        recordStats);
   }
 
   @Override
@@ -189,8 +203,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     // Public sources are accessible to all
-    if (!resourcePath.getPathComponents().isEmpty() &&
-        publicSources.contains(resourcePath.getPathComponents().get(0))) {
+    if (!resourcePath.getPathComponents().isEmpty()
+        && publicSources.contains(resourcePath.getPathComponents().get(0))) {
       logger.debug("Resource {} is in public source, allowing access", resourcePath);
       return true;
     }
@@ -210,9 +224,16 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     permissionCache.put(cacheKey, allowed);
 
     // Audit log denial
-    if (!allowed && config.getBoolean(CONFIG_PREFIX + ".audit.log_denials")) {
-      AUDIT_LOGGER.warn("PERMISSION_DENIED: user={}, resource={}, privilege={}",
-          username, resourcePath, privilege);
+    boolean logDenials =
+        config.hasPath(CONFIG_PREFIX + ".audit.log_denials")
+            ? config.getBoolean(CONFIG_PREFIX + ".audit.log_denials")
+            : true;
+    if (!allowed && logDenials) {
+      AUDIT_LOGGER.warn(
+          "PERMISSION_DENIED: user={}, resource={}, privilege={}",
+          username,
+          resourcePath,
+          privilege);
     }
 
     return allowed;
@@ -223,8 +244,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     if (!strictMode || !enabled) {
       // Permissive mode or disabled - log but don't enforce
       if (!checkPermission(username, resourcePath, privilege)) {
-        logger.warn("Permission check failed but running in permissive mode: user={}, resource={}, privilege={}",
-            username, resourcePath, privilege);
+        logger.warn(
+            "Permission check failed but running in permissive mode: user={}, resource={}, privilege={}",
+            username,
+            resourcePath,
+            privilege);
       }
       return;
     }
@@ -232,8 +256,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     // Strict mode - enforce
     if (!checkPermission(username, resourcePath, privilege)) {
       throw UserException.permissionError()
-          .message("User [%s] does not have [%s] privilege on [%s]",
-              username, privilege, resourcePath)
+          .message(
+              "User [%s] does not have [%s] privilege on [%s]", username, privilege, resourcePath)
           .buildSilently();
     }
   }
@@ -245,7 +269,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       NamespaceKey resourcePath,
       Privilege privilege,
       String grantedBy,
-      boolean withGrantOption) throws AclException {
+      boolean withGrantOption)
+      throws AclException {
 
     if (!enabled) {
       throw new AclException("ACL service is disabled");
@@ -277,7 +302,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     if (existingGrant != null) {
       // Update existing grant (add privilege if not already present)
-      List<PrivilegeType> existingPrivileges = Lists.newArrayList(existingGrant.getPrivilegesList());
+      List<PrivilegeType> existingPrivileges =
+          Lists.newArrayList(existingGrant.getPrivilegesList());
       PrivilegeType newPrivilege = convertToPrivilegeType(privilege);
 
       if (!existingPrivileges.contains(newPrivilege)) {
@@ -317,9 +343,18 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     clearPermissionCacheForUser(granteeName);
 
     // Audit log
-    if (config.getBoolean(CONFIG_PREFIX + ".audit.log_changes")) {
-      AUDIT_LOGGER.info("GRANT {} ON {} TO {} BY {} (WITH_GRANT_OPTION: {})",
-          privilege, resourcePath, granteeName, grantedBy, withGrantOption);
+    boolean logChanges =
+        config.hasPath(CONFIG_PREFIX + ".audit.log_changes")
+            ? config.getBoolean(CONFIG_PREFIX + ".audit.log_changes")
+            : true;
+    if (logChanges) {
+      AUDIT_LOGGER.info(
+          "GRANT {} ON {} TO {} BY {} (WITH_GRANT_OPTION: {})",
+          privilege,
+          resourcePath,
+          granteeName,
+          grantedBy,
+          withGrantOption);
     }
   }
 
@@ -329,7 +364,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       String granteeName,
       NamespaceKey resourcePath,
       Privilege privilege,
-      String revokedBy) throws AclException {
+      String revokedBy)
+      throws AclException {
 
     if (!enabled) {
       throw new AclException("ACL service is disabled");
@@ -341,8 +377,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     Preconditions.checkNotNull(privilege, "privilege is required");
     Preconditions.checkNotNull(revokedBy, "revokedBy is required");
 
-    logger.info("Revoking privilege: granteeType={}, granteeName={}, resource={}, privilege={}, revokedBy={}",
-        granteeType, granteeName, resourcePath, privilege, revokedBy);
+    logger.info(
+        "Revoking privilege: granteeType={}, granteeName={}, resource={}, privilege={}, revokedBy={}",
+        granteeType,
+        granteeName,
+        resourcePath,
+        privilege,
+        revokedBy);
 
     // Find existing grant
     PrivilegeGrant existingGrant = privilegeStore.findGrant(granteeType, granteeName, resourcePath);
@@ -381,9 +422,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     clearPermissionCacheForUser(granteeName);
 
     // Audit log
-    if (config.getBoolean(CONFIG_PREFIX + ".audit.log_changes")) {
-      AUDIT_LOGGER.info("REVOKE {} ON {} FROM {} BY {}",
-          privilege, resourcePath, granteeName, revokedBy);
+    boolean logChanges =
+        config.hasPath(CONFIG_PREFIX + ".audit.log_changes")
+            ? config.getBoolean(CONFIG_PREFIX + ".audit.log_changes")
+            : true;
+    if (logChanges) {
+      AUDIT_LOGGER.info(
+          "REVOKE {} ON {} FROM {} BY {}", privilege, resourcePath, granteeName, revokedBy);
     }
   }
 
@@ -463,9 +508,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
   }
 
-  /**
-   * Cache key for permission lookups.
-   */
+  /** Cache key for permission lookups. */
   @VisibleForTesting
   static class PermissionCacheKey {
     private final String username;
@@ -511,11 +554,16 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public String toString() {
-      return "PermissionCacheKey{" +
-          "username='" + username + '\'' +
-          ", resourcePath='" + resourcePath + '\'' +
-          ", privilege=" + privilege +
-          '}';
+      return "PermissionCacheKey{"
+          + "username='"
+          + username
+          + '\''
+          + ", resourcePath='"
+          + resourcePath
+          + '\''
+          + ", privilege="
+          + privilege
+          + '}';
     }
   }
 }

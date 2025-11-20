@@ -15,9 +15,7 @@
  */
 package com.dremio.service.acl.exception;
 
-/**
- * Exception thrown when a privilege grant is not found.
- */
+/** Exception thrown when a privilege grant is not found. */
 public class PrivilegeNotFoundException extends AclException {
 
   public PrivilegeNotFoundException(String message) {
